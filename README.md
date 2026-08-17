@@ -24,6 +24,10 @@ Markdown → MDPATH → MDCROP → MDLOOM → MDPORT
 | **MDLOOM** | Validation, compilation, rendering, and publication. |
 | [MDPORT](https://github.com/giodl73-repo/MDPORT) | Compact portable `mdport.v1` records. |
 
+The [reuse boundary](docs/adoption/reuse-boundary.md) defines MDLOOM's proven
+CLI/config/artifact adoption contract with MAXIM and distinguishes it from
+currently unproven cross-repository Rust library reuse.
+
 MDLOOM is a full Markdown compilation toolchain — LaTeX math, ASCII slide decks,
 live dashboards, tree diagrams, sparkline charts, cross-referenced guides — all
 authored in plain text, compiled to terminal-perfect output.
