@@ -495,16 +495,20 @@ fn write_fake_mdcrop_bin(dir: &Path, args_file: &Path, exit_code: i32) -> PathBu
     bin
 }
 
-fn sibling_mdcrop_manifest() -> Option<PathBuf> {
+fn required_sibling_mdcrop_manifest() -> PathBuf {
     let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
     let workspace = manifest_dir.parent().unwrap_or(manifest_dir);
     for name in ["mdcrop", "MDCROP"] {
         let manifest = workspace.join(name).join("Cargo.toml");
         if manifest.exists() {
-            return Some(manifest);
+            return manifest;
         }
     }
-    None
+    panic!(
+        "real MDCROP consumer proof requires a sibling checkout at {} or {}",
+        workspace.join("mdcrop").display(),
+        workspace.join("MDCROP").display()
+    );
 }
 
 fn sibling_mdcrop_fixture_root(mdcrop_manifest: &Path) -> PathBuf {
@@ -4756,17 +4760,19 @@ fn binary_catalog_delegates_to_mdcrop_catalog() {
 #[test]
 fn binary_real_mdcrop_index_generates_fixture_markdown() {
     let bin = debug_bin();
-    if !bin.exists() {
-        return;
-    }
-    let Some(mdcrop_manifest) = sibling_mdcrop_manifest() else {
-        return;
-    };
+    assert!(
+        bin.exists(),
+        "MDLOOM debug binary not found at {}",
+        bin.display()
+    );
+    let mdcrop_manifest = required_sibling_mdcrop_manifest();
     let fixture_root = sibling_mdcrop_fixture_root(&mdcrop_manifest);
     let view_file = fixture_root.join("mdloom-ready-view.json");
-    if !view_file.exists() {
-        return;
-    }
+    assert!(
+        view_file.exists(),
+        "MDCROP proof fixture not found at {}",
+        view_file.display()
+    );
 
     let dir = tempfile::tempdir().unwrap();
     let mdcrop_bin = write_real_mdcrop_bin(dir.path(), &mdcrop_manifest);
@@ -4799,17 +4805,19 @@ fn binary_real_mdcrop_index_generates_fixture_markdown() {
 #[test]
 fn binary_real_mdcrop_frontmatter_generates_fixture_json() {
     let bin = debug_bin();
-    if !bin.exists() {
-        return;
-    }
-    let Some(mdcrop_manifest) = sibling_mdcrop_manifest() else {
-        return;
-    };
+    assert!(
+        bin.exists(),
+        "MDLOOM debug binary not found at {}",
+        bin.display()
+    );
+    let mdcrop_manifest = required_sibling_mdcrop_manifest();
     let fixture_root = sibling_mdcrop_fixture_root(&mdcrop_manifest);
     let view_file = fixture_root.join("mdloom-ready-view.json");
-    if !view_file.exists() {
-        return;
-    }
+    assert!(
+        view_file.exists(),
+        "MDCROP proof fixture not found at {}",
+        view_file.display()
+    );
 
     let dir = tempfile::tempdir().unwrap();
     let mdcrop_bin = write_real_mdcrop_bin(dir.path(), &mdcrop_manifest);

@@ -20,3 +20,10 @@ clone_url = "https://github.com/giodl73-repo/MDPATH.git"
 cargo_patches = [
   { package = "mdpath", source = "https://github.com/giodl73-repo/MDPATH", path = "." },
 ]
+
+[repos.mdcrop]
+role = "corpus-intelligence CLI and schema dependency"
+relative = "..\\mdcrop"
+canonical = "giodl73-repo/MDCROP"
+clone_url = "https://github.com/giodl73-repo/MDCROP.git"
+required_by = ["src/cmd_mdcrop.rs", "src/compile_mdcrop.rs", "tests/integration_tests.rs"]

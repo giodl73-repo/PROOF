@@ -1,0 +1,36 @@
+{
+  "schema": "mdloom.dependency.v1",
+  "provider": {
+    "repository": "https://github.com/giodl73-repo/MDCROP",
+    "version": "0.2.0",
+    "revision": "4c3f6e6a7388062575ea37b869fb159d1298fabc"
+  },
+  "contract": {
+    "transport": "mdcrop CLI",
+    "commands": [
+      "index",
+      "catalog",
+      "status",
+      "links",
+      "backlinks",
+      "frontmatter",
+      "headings",
+      "view"
+    ],
+    "schemas": [
+      "mdcrop.view.v1",
+      "mdcrop.corpus-status.v1",
+      "mdcrop.markdown-link-audit.v1",
+      "mdcrop.markdown-backlinks.v1",
+      "mdcrop.markdown-frontmatter.v1",
+      "mdcrop.markdown-heading-inventory.v1"
+    ]
+  },
+  "consumerProof": {
+    "file": "tests/integration_tests.rs",
+    "tests": [
+      "binary_real_mdcrop_index_generates_fixture_markdown",
+      "binary_real_mdcrop_frontmatter_generates_fixture_json"
+    ]
+  }
+}

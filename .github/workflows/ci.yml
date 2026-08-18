@@ -31,11 +31,20 @@ jobs:
       - name: Clone mdpath sibling
         run: git clone https://github.com/giodl73-repo/MDPATH ../mdpath
 
+      - name: Check out pinned mdcrop sibling
+        run: |
+          git init ../mdcrop
+          git -C ../mdcrop fetch --depth 1 https://github.com/giodl73-repo/MDCROP.git 4c3f6e6a7388062575ea37b869fb159d1298fabc
+          git -C ../mdcrop checkout --detach FETCH_HEAD
+
       - name: Build
         run: cargo build --all-targets
 
       - name: Test (unit + integration)
         run: cargo test
+
+      - name: Prove real mdcrop compatibility
+        run: cargo test --test integration_tests binary_real_mdcrop_
 
       - name: Test (release mode)
         run: cargo test --release
