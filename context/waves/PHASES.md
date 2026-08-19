@@ -117,6 +117,10 @@ close notes, and the artifacts that changed the system.
 | 2026-05-16 | Publication AST and Themes | Introduce a shared publication AST and theme token system for consistent professional publish output. | active |
 | 2026-07-25 | MDLOOM Product Rename | Rename PROOF to MDLOOM across the repository, package family, command surface, configuration, state, directives, documentation, and release automation. | done |
 
+Completed May 15 micro-waves that contained only a closeout are consolidated in
+[`2026-05-15-CLOSEOUT-LEDGER.md`](2026-05-15-CLOSEOUT-LEDGER.md). Multi-file
+waves retain their original directories.
+
 ## Operating Model
 
 Each active wave keeps:
