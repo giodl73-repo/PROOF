@@ -1,6 +1,5 @@
 **/target/
-/.mdloom/
-tests/fixtures/.mdloom/
+**/.mdloom/
 /src/user-scenarios/*-out.md
 /src/user-scenarios/*-out.slides.md
 .cargo/config.toml
