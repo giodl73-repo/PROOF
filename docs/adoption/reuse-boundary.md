@@ -30,6 +30,21 @@ MDPATH owns stable `md://` addressing. MDPORT owns portable transfer semantics.
 MDLOOM owns compilation, validation, rendering, diagnostics, and artifact
 production.
 
+## Compatibility and lifecycle
+
+Consumers pin a tested MDLOOM revision and the command, diagnostic, or record
+identifiers they accept. Existing identifiers retain their documented meaning;
+an incompatible field, diagnostic, directive, or command change requires a new
+identifier or release boundary, a migration note, and a passing consumer
+rehearsal.
+
+A reusable surface may be deprecated only with a named replacement or removal
+path, the affected identifiers, and an explicit removal condition. It must not
+disappear silently while a recorded adopter still relies on it. Consumers may
+remain on their last passing revision while they migrate. Rollback means
+restoring that revision and accepted baseline, not weakening corpus policy or
+bulk-editing content to hide detector drift.
+
 ## Not yet a portfolio contract
 
 The broad `mdloom_lib` module surface is primarily the CLI's implementation
