@@ -1,4 +1,4 @@
-<!-- mdloom:compiled from="mdloom:dashboard" title="Test" -->
+<!-- proof:compiled from="proof:dashboard" title="Test" -->
 ```dashboard
 HEADER CONTENT      
                     
@@ -7,4 +7,4 @@ FOOTER CONTENT
                     
                     
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->

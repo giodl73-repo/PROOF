@@ -4,19 +4,19 @@ Attributed quotations in technical writing provide grounding and authority.
 
 ## Classic Attribution
 
-```mdloom:blockquote attribution="Donald Knuth"
+```proof:blockquote attribution="Donald Knuth"
 Premature optimization is the root of all evil.
 ```
 
 ## Multi-line with Double Border
 
-```mdloom:blockquote attribution="Fred Brooks, The Mythical Man-Month" style=double
+```proof:blockquote attribution="Fred Brooks, The Mythical Man-Month" style=double
 Adding manpower to a late software project makes it later.
 ```
 
 ## Indented Style (No Bar)
 
-```mdloom:blockquote attribution="Alan Kay" style=indented
+```proof:blockquote attribution="Alan Kay" style=indented
 The best way to predict the future is to invent it.
 ```
 

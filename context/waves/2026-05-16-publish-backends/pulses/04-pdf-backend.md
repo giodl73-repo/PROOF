@@ -26,7 +26,7 @@ portable human-readable artifact.
   - `tests/integration_tests.rs`
 - Generated/user artifacts:
   - `*.pdf`
-  - `.mdloom/artifacts.json` entries with `target = "pdf"`
+  - `.proof/artifacts.json` entries with `target = "pdf"`
 
 ## Pre-implementation scout
 
@@ -47,7 +47,7 @@ portable human-readable artifact.
 - `cargo fmt --check`
 - `cargo test binary_compile_target_pdf_writes_pdf`
 - `cargo test --test integration_tests`
-- `mdloom compile <fixture>.source.md --target pdf -o <out>.pdf`
+- `proof compile <fixture>.source.md --target pdf -o <out>.pdf`
 - `git diff --check`
 
 ## Non-goals
@@ -58,7 +58,7 @@ portable human-readable artifact.
 
 ## Evidence
 
-- Added `mdloom compile --target pdf`.
+- Added `proof compile --target pdf`.
 - PDF output is generated from the same resolved HTML publish output used by
   `--target html`.
 - Added deterministic dependency-free PDF bytes with metadata and basic text
@@ -68,5 +68,5 @@ portable human-readable artifact.
   - `cargo fmt --check`
   - `cargo test binary_compile_target_pdf_writes_pdf`
   - `cargo test --test integration_tests`
-  - `mdloom compile <fixture>.source.md --target pdf -o <out>.pdf`
+  - `proof compile <fixture>.source.md --target pdf -o <out>.pdf`
   - `git diff --check`

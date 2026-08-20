@@ -5,7 +5,7 @@ slides:
   theme: minimal
 ---
 
-```mdloom:slide layout=comparison title="Eisenhower matrix"
+```proof:slide layout=comparison title="Eisenhower matrix"
 ## axis:y Importance
 ## axis:x Urgency
 ## q:tl
@@ -28,7 +28,7 @@ NOT URGENT + NOT IMPORTANT
 
 ---
 
-```mdloom:slide layout=comparison title="Build vs buy"
+```proof:slide layout=comparison title="Build vs buy"
 ## axis:y Specificity
 ## axis:x Cost
 ## q:tl

@@ -1,4 +1,4 @@
-# mdloom Symbols — Named Glyph Library
+# proof Symbols — Named Glyph Library
 
 The symbol system gives you named Unicode glyphs that expand anywhere in prose,
 bullets, slide content, and element labels. The key insight is that symbols are
@@ -15,7 +15,7 @@ itself is the content.
 ## Inline symbol expansion
 
 Inline expansion is the most common use. Write `[sym:name]` anywhere in prose
-and mdloom replaces it with the Unicode glyph at compile time. This works in
+and proof replaces it with the Unicode glyph at compile time. This works in
 paragraphs, bullet labels, callout text, and slide titles — anywhere text is
 rendered.
 
@@ -44,10 +44,10 @@ in bullet lists where you want a visual left-edge that isn't just `-`.
 ## Symbol blocks
 
 When the symbol needs to be large — a section header icon, a status badge in a
-dashboard region, or a decorative element — use `mdloom:symbol`. The `size`
+dashboard region, or a decorative element — use `proof:symbol`. The `size`
 parameter scales the symbol from 1 (compact) to 5+ (display-sized).
 
-<!-- mdloom:compiled from="mdloom:symbol" name="checkmark" size="3" -->
+<!-- proof:compiled from="proof:symbol" name="checkmark" size="3" -->
 ```
 ✓✓✓✓✓
 ✓✓✓✓✓
@@ -55,9 +55,9 @@ parameter scales the symbol from 1 (compact) to 5+ (display-sized).
 ✓✓✓✓✓
 ✓✓✓✓✓
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
-<!-- mdloom:compiled from="mdloom:symbol" name="star" size="5" -->
+<!-- proof:compiled from="proof:symbol" name="star" size="5" -->
 ```
 ★★★★★★★★★
 ★★★★★★★★★
@@ -69,13 +69,13 @@ parameter scales the symbol from 1 (compact) to 5+ (display-sized).
 ★★★★★★★★★
 ★★★★★★★★★
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
 ---
 
 ## Shape renderer
 
-`mdloom:shape` generates geometric ASCII art shapes with optional labels. Use
+`proof:shape` generates geometric ASCII art shapes with optional labels. Use
 shapes to create visual frames for content, highlight important sections, or
 build visual identity in dashboards. The available shapes are banner (wide
 rectangle), badge (compact), and ribbon (angled).
@@ -83,29 +83,29 @@ rectangle), badge (compact), and ribbon (angled).
 A labeled banner works well as a section divider in a dashboard or as a callout
 header in slides.
 
-<!-- mdloom:compiled from="mdloom:shape" name="banner" -->
+<!-- proof:compiled from="proof:shape" name="banner" -->
 ```
 ╔══════════════════════════╗
 ║                          ║
 ╚══════════════════════════╝
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
-<!-- mdloom:compiled from="mdloom:shape" name="badge" -->
+<!-- proof:compiled from="proof:shape" name="badge" -->
 ```
  ╭─────────╮
  │ COMPILE │
  ╰─────────╯
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
-<!-- mdloom:compiled from="mdloom:shape" name="ribbon" -->
+<!-- proof:compiled from="proof:shape" name="ribbon" -->
 ```
    ╱‾‾‾‾‾‾╲
   ╱      ╲
  ╱______╲
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
 ---
 
@@ -114,7 +114,7 @@ header in slides.
 The full built-in library. All names are lowercase with hyphens. The `aliases`
 column lists alternate names that resolve to the same glyph.
 
-<!-- mdloom:compiled from="mdloom:row" uri="md://src/data/symbol-catalog.md" -->
+<!-- proof:compiled from="proof:row" uri="md://src/data/symbol-catalog.md" -->
 ```
 checkmark            │ ✓        │ status       │ check, done, tick             
 cross                │ ✗        │ status       │ x, no, fail                   
@@ -153,13 +153,13 @@ tag                  │ 🏷        │ label        │ label
 bar                  │ ▊        │ chart        │ bar-segment                   
 spark                │ ▁▂▃▄▅▆▇█ │ chart        │ sparkline                     
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
 ---
 
 ## Custom symbols
 
-Define custom symbols in `mdloom.toml` under `[[symbol]]`. Each symbol is a list
+Define custom symbols in `proof.toml` under `[[symbol]]`. Each symbol is a list
 of lines that form the glyph. This is useful for project logos, custom icons, or
 any recurring visual element that belongs in your document corpus.
 
@@ -174,7 +174,7 @@ lines = [
 ```
 
 After defining it, use it anywhere: `[sym:my-logo]` in prose, or
-`mdloom:symbol name=my-logo size=1` for block rendering.
+`proof:symbol name=my-logo size=1` for block rendering.
 
 ---
 
@@ -183,8 +183,8 @@ After defining it, use it anywhere: `[sym:my-logo]` in prose, or
 Symbols expand in slide titles and subtitles, making it easy to add visual
 markers to presentation content without special rendering:
 
-```mdloom:slide layout=title
-title: "[sym:star] mdloom"
+```proof:slide layout=title
+title: "[sym:star] proof"
 subtitle: "Markdown quality assurance"
 ```
 
@@ -192,7 +192,7 @@ subtitle: "Markdown quality assurance"
 
 ## Where symbols expand and where they don't
 
-Symbols only expand in contexts where mdloom processes text. They are skipped
+Symbols only expand in contexts where proof processes text. They are skipped
 inside fenced code blocks and inline code spans to avoid corrupting literal
 content.
 

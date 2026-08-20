@@ -1,8 +1,8 @@
 {
   "schema_version": "mdcrop.view.v1",
-  "name": "mdloom-guides",
+  "name": "proof-guides",
   "root": "..\\..\\src\\guides",
-  "task": "mdloom-guides corpus",
+  "task": "proof-guides corpus",
   "token_budget": 12000,
   "seed": 0,
   "include_extensions": [

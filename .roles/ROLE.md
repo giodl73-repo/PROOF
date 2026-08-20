@@ -1,6 +1,6 @@
-# mdloom Review Roles
+# proof Review Roles
 
-Thirteen perspectives on mdloom — the markdown quality assurance, compiler, and
+Thirteen perspectives on proof — the markdown quality assurance, compiler, and
 typesetting system.
 Each role has a pointed view and pulls against at least one other.
 

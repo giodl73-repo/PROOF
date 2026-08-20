@@ -91,7 +91,7 @@ pub(crate) fn generate_tree_block(
                 }
             } else {
                 anyhow::bail!(
-                    "mdloom:tree kind={} requires either source=md://... or an inline body",
+                    "proof:tree kind={} requires either source=md://... or an inline body",
                     kind
                 )
             }
@@ -100,7 +100,7 @@ pub(crate) fn generate_tree_block(
 
     if body.trim().is_empty() {
         anyhow::bail!(
-            "mdloom:tree kind={} produced empty output — check source table columns (name={:?}, parent={:?})",
+            "proof:tree kind={} produced empty output — check source table columns (name={:?}, parent={:?})",
             kind,
             attrs.name.as_deref().unwrap_or("name"),
             attrs.parent.as_deref().unwrap_or("parent"),
@@ -109,7 +109,7 @@ pub(crate) fn generate_tree_block(
 
     let uris = source.map(|s| s.to_string()).unwrap_or_default();
     Ok(format!(
-        "<!-- mdloom:compiled from=\"mdloom:tree kind={}\" uri=\"{}\" -->\n```{}\n{}\n```\n<!-- /mdloom:compiled -->",
+        "<!-- proof:compiled from=\"proof:tree kind={}\" uri=\"{}\" -->\n```{}\n{}\n```\n<!-- /proof:compiled -->",
         kind, uris, kind, body
     ))
 }

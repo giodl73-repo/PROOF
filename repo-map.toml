@@ -11,10 +11,10 @@ cargo_config = ".cargo/config.toml"
 [repos.this_repo]
 role = "current repository"
 relative = "."
-clone_url = "https://github.com/giodl73-repo/MDLOOM.git"
+clone_url = "https://github.com/giodl73-repo/PROOF.git"
 
 [repos.mdpath]
-role = "tracker dependency for mdloom"
+role = "tracker dependency for proof"
 relative = "..\\..\\standards-protocols\\mdpath"
 clone_url = "https://github.com/giodl73-repo/MDPATH.git"
 cargo_patches = [

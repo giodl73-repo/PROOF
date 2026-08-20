@@ -1,9 +1,9 @@
 use crate::cmd_context::GlobalOptions;
 use anyhow::{bail, Result};
 use colored::Colorize;
-use mdloom_lib::frontmatter::FrontmatterTagCounts;
-use mdloom_lib::lint::load_config_for_path;
-use mdloom_lib::MdloomConfig;
+use proof_lib::frontmatter::FrontmatterTagCounts;
+use proof_lib::lint::load_config_for_path;
+use proof_lib::ProofConfig;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -12,7 +12,7 @@ pub(crate) struct Args {
     /// Directory to inspect (default: current directory)
     #[arg(default_value = ".")]
     dir: PathBuf,
-    /// Delegate corpus health to MDCROP status instead of the local MDLOOM summary
+    /// Delegate corpus health to MDCROP status instead of the local PROOF summary
     #[arg(long)]
     mdcrop: bool,
     /// MDCROP executable to invoke with --mdcrop
@@ -55,7 +55,7 @@ fn reject_mdcrop_only_options(args: &Args) -> Result<()> {
         || args.mdcrop_format.is_some()
         || args.mdcrop_bin != Path::new("mdcrop")
     {
-        bail!("mdloom status MDCROP options require --mdcrop");
+        bail!("proof status MDCROP options require --mdcrop");
     }
     Ok(())
 }
@@ -67,7 +67,7 @@ fn run_mdcrop_status(args: Args, globals: &GlobalOptions) -> Result<()> {
 
 fn build_mdcrop_status_args(args: Args, globals: &GlobalOptions) -> Result<Vec<String>> {
     if args.view.is_some() && args.dir != Path::new(".") {
-        bail!("mdloom status --mdcrop accepts either a positional directory or --view, not both");
+        bail!("proof status --mdcrop accepts either a positional directory or --view, not both");
     }
     let root = if args.view.is_some() {
         None
@@ -110,7 +110,7 @@ fn run(args: Args, config_override: &Option<PathBuf>) -> Result<()> {
 
     println!(
         "{} — {}",
-        "mdloom status".bold(),
+        "proof status".bold(),
         root.display().to_string().cyan()
     );
     println!();
@@ -191,7 +191,7 @@ fn run(args: Args, config_override: &Option<PathBuf>) -> Result<()> {
         println!("  {:<16} {}", "Last compile".dimmed(), "never".dimmed());
     }
 
-    let cache_file = root.join(".mdloom/last-check.json");
+    let cache_file = root.join(".proof/last-check.json");
     if cache_file.exists() {
         if let Ok(content) = std::fs::read_to_string(&cache_file) {
             let errors: Option<u64> = extract_json_u64(&content, "errors");
@@ -217,7 +217,7 @@ fn run(args: Args, config_override: &Option<PathBuf>) -> Result<()> {
     let cfg = if config_override.is_some() {
         load_config_for_path(&root, config_override)?
     } else {
-        MdloomConfig::load_or_default(&root)
+        ProofConfig::load_or_default(&root)
     };
     let schema_count = cfg.section_schemas.len();
     let target_count = cfg.compile.len();
@@ -227,7 +227,7 @@ fn run(args: Args, config_override: &Option<PathBuf>) -> Result<()> {
         "root=false"
     };
     println!(
-        "  {:<16} mdloom.toml ({}, {} schemas, {} compile targets)",
+        "  {:<16} proof.toml ({}, {} schemas, {} compile targets)",
         "Config".dimmed(),
         root_flag,
         schema_count,

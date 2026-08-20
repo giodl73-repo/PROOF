@@ -1,15 +1,15 @@
-/// US-27: mdloom-math standalone binary.
+/// US-27: proof-math standalone binary.
 ///
 /// A CLI tool that reads lines of prose from stdin and writes the same
 /// lines with all $...$ math spans expanded to Unicode/ASCII art on stdout.
 ///
 /// Run:
-///   echo 'The energy $E = mc^2$ is famous.' | cargo run --example mdloom-math-binary
+///   echo 'The energy $E = mc^2$ is famous.' | cargo run --example proof-math-binary
 ///
 /// Cargo.toml dependencies:
-///   mdloom-math = { path = "../../crates/mdloom-math" }
+///   proof-math = { path = "../../crates/proof-math" }
 
-use mdloom_math::{expand_inline_math, render_display_math, MathAlign};
+use proof_math::{expand_inline_math, render_display_math, MathAlign};
 use std::io::{self, BufRead, Write};
 
 fn main() -> io::Result<()> {
@@ -69,7 +69,7 @@ fn main() -> io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use mdloom_math::expand_inline_math;
+    use proof_math::expand_inline_math;
 
     #[test]
     fn greek_letters_expand() {

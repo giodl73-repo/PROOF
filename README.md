@@ -1,4 +1,4 @@
-# MDLOOM
+# PROOF
 
 **Weave Markdown into finished documents.**
 
@@ -10,10 +10,10 @@ repository-local review panels.
 
 ## MD family
 
-MDLOOM is the build and publication layer in the MD family:
+PROOF is the build and publication layer in the MD family:
 
 ```text
-Markdown → MDPATH → MDCROP → MDLOOM → MDPORT
+Markdown → MDPATH → MDCROP → PROOF → MDPORT
              address    select     build      transfer
 ```
 
@@ -21,24 +21,24 @@ Markdown → MDPATH → MDCROP → MDLOOM → MDPORT
 |------|----------------|
 | [MDPATH](https://github.com/giodl73-repo/MDPATH) | Stable `md://` addresses for Markdown elements. |
 | [MDCROP](https://github.com/giodl73-repo/MDCROP) | Corpus indexing, graph selection, and bounded context. |
-| **MDLOOM** | Validation, compilation, rendering, and publication. |
+| **PROOF** | Validation, compilation, rendering, and publication. |
 | [MDPORT](https://github.com/giodl73-repo/MDPORT) | Compact portable `mdport.v1` records. |
 
-The [reuse boundary](docs/adoption/reuse-boundary.md) defines MDLOOM's proven
+The [reuse boundary](docs/adoption/reuse-boundary.md) defines PROOF's proven
 CLI/config/artifact adoption contract with MAXIM and distinguishes it from
 currently unproven cross-repository Rust library reuse.
 
-MDLOOM is a full Markdown compilation toolchain — LaTeX math, ASCII slide decks,
+PROOF is a full Markdown compilation toolchain — LaTeX math, ASCII slide decks,
 live dashboards, tree diagrams, sparkline charts, cross-referenced guides — all
 authored in plain text, compiled to terminal-perfect output.
 
 It powers a 2,700-file reference library (217 directories, 13 sections), a suite of
 technical presentation decks, and a cross-linked documentation corpus. Every guide,
-every chart, every diagram: authored in `.source.md`, compiled to `.md` by MDLOOM.
+every chart, every diagram: authored in `.source.md`, compiled to `.md` by PROOF.
 
 ```
-.source.md  →  mdloom compile  →  .md / .html
-.md         →  mdloom backfill →  .source.md
+.source.md  →  proof compile  →  .md / .html
+.md         →  proof backfill →  .source.md
 ```
 
 Think of it as a static site generator for terminal-first content: markdown is
@@ -47,19 +47,19 @@ the primary artifact, HTML is the first human publish target, and **Mdports**
 targets such as PPTX belong behind the same compile graph rather than a separate
 workflow.
 
-**What mdloom can render from a single `.source.md` file:**
+**What proof can render from a single `.source.md` file:**
 
 ```
 $\sum_{i=1}^{n} i = \frac{n(n+1)}{2}$   →  ASCII math with fractions, integrals, Greek
-mdloom:slide layout=title-content          →  80-column ASCII presentation canvas
-mdloom:tree kind=org                       →  box-drawing tree diagrams
-mdloom:element kind=sparkline              →  ▂▃▅▇█ inline sparklines
-mdloom:xref uri="md://api.md#auth"         →  *See: [Authentication](api.md#authentication)*
-mdloom:toc section="API Reference"         →  scoped, auto-updating table of contents
+proof:slide layout=title-content          →  80-column ASCII presentation canvas
+proof:tree kind=org                       →  box-drawing tree diagrams
+proof:element kind=sparkline              →  ▂▃▅▇█ inline sparklines
+proof:xref uri="md://api.md#auth"         →  *See: [Authentication](api.md#authentication)*
+proof:toc section="API Reference"         →  scoped, auto-updating table of contents
 [sym:checkmark] passed                    →  ✓ passed
 ```
 
-mdloom also **checks** your markdown corpus — catching geometry errors in ASCII art,
+proof also **checks** your markdown corpus — catching geometry errors in ASCII art,
 broken `md://` heading references, missing required sections, and misaligned tables —
 with file:line:col precision and did-you-mean suggestions.
 
@@ -67,37 +67,37 @@ with file:line:col precision and did-you-mean suggestions.
 
 ## Install
 
-MDLOOM uses MDPATH for stable document addressing. Clone and build:
+PROOF uses MDPATH for stable document addressing. Clone and build:
 
 ```bash
-git clone https://github.com/giodl73-repo/MDLOOM
+git clone https://github.com/giodl73-repo/PROOF
 git clone https://github.com/giodl73-repo/MDPATH   # sibling directory
-cd MDLOOM
+cd PROOF
 cargo build --release
 ```
 
-Binary: `target/release/mdloom` (or `../../target/release/mdloom` from workspace root).
+Binary: `target/release/proof` (or `../../target/release/proof` from workspace root).
 
 ---
 
 ## Checking
 
 ```bash
-mdloom check .                      # lint all markdown
-mdloom check docs/ --errors-only    # errors only
-mdloom check . --by-code            # group counts by diagnostic code
-mdloom check . --deduplicate        # collapse repeated warnings into summary lines
+proof check .                      # lint all markdown
+proof check docs/ --errors-only    # errors only
+proof check . --by-code            # group counts by diagnostic code
+proof check . --deduplicate        # collapse repeated warnings into summary lines
 ```
 
-mdloom validates:
+proof validates:
 
 - **ASCII art** — box widths, column separator alignment, connector continuity, flowchart geometry
 - **Markdown structure** — H1 count, required headings, heading order, file length, H2 allowlists
 - **Tables** — column count, required columns, required row keys, allowed values, separator dashes
-- **Source tables** — inline pipe tables in `.source.md` files are flagged so durable row data can move to sidecar JSON/CSV or generated MDLOOM tables
+- **Source tables** — inline pipe tables in `.source.md` files are flagged so durable row data can move to sidecar JSON/CSV or generated PROOF tables
 - **Links** — prose `[text](path.md)` links exist on disk
 - **Source documents** — broken `md://` references and missing heading paths caught before compile
-- **DaVinci figures** — structural invariants verified on every `mdloom check --daVinci`
+- **DaVinci figures** — structural invariants verified on every `proof check --daVinci`
 
 Every diagnostic includes file, line, column, code, and message. Did-you-mean
 suggestions appear for common typos:
@@ -124,55 +124,55 @@ Find every source file that references a given `md://` URI — so you know what
 breaks before renaming a heading or moving a figure:
 
 ```bash
-mdloom depends md://api.md#authentication
-mdloom depends md://figures/arch.md
+proof depends md://api.md#authentication
+proof depends md://figures/arch.md
 ```
 
 ---
 
 ## Compiling
 
-Source files (`.source.md`) contain `mdloom:` directives. Compile resolves every
+Source files (`.source.md`) contain `proof:` directives. Compile resolves every
 directive and writes the output `.md` file.
 
 ```bash
-mdloom compile src/guides/          # compile directory → docs/guides/ (from mdloom.toml)
-mdloom compile --watch              # watch all [[compile]] targets for changes
-mdloom compile --progress           # show per-file progress at corpus scale
-mdloom compile file.source.md -o out.md   # single file, explicit output
-mdloom compile file.source.md --target html -o out.html
-mdloom compile file.source.md --target mdport -o out.mdport.json
-mdloom compile file.source.md --target json-report -o out.mdloom-report.json
-mdloom compile src/guides/ --target site --output-dir site/
-mdloom compile file.source.md --target pdf -o out.pdf
-mdloom compile file.source.md --target docx -o out.docx
-mdloom compile deck.slides.source.md --target pptx -o deck.pptx
+proof compile src/guides/          # compile directory → docs/guides/ (from proof.toml)
+proof compile --watch              # watch all [[compile]] targets for changes
+proof compile --progress           # show per-file progress at corpus scale
+proof compile file.source.md -o out.md   # single file, explicit output
+proof compile file.source.md --target html -o out.html
+proof compile file.source.md --target mdport -o out.mdport.json
+proof compile file.source.md --target json-report -o out.proof-report.json
+proof compile src/guides/ --target site --output-dir site/
+proof compile file.source.md --target pdf -o out.pdf
+proof compile file.source.md --target docx -o out.docx
+proof compile deck.slides.source.md --target pptx -o deck.pptx
 ```
 
 Markdown is the default compile target. `--target html` resolves the same source
 directives, strips source-only frontmatter, and writes a standalone HTML document
 with common Markdown support for lists, tables, links, task lists, strikethrough,
 and fenced code. Raw HTML is escaped by default. Successful compile runs also
-write `.mdloom/artifacts.json`, a target-aware manifest of source files, output
+write `.proof/artifacts.json`, a target-aware manifest of source files, output
 paths, diagnostics, cache status, and resolved directive counts.
 
-MDLOOM writes stable JSON artifact/report rows that external query tools can
+PROOF writes stable JSON artifact/report rows that external query tools can
 select without entering the compile or render graph.
 
 `--target mdport` writes a compact `mdport.v1` JSON document for agents,
 retrieval, and transfer. Mdports preserve stable section IDs, heading paths,
 line numbers, resolved Markdown text, source path, and resolved dependency refs.
 MDCROP can support the same schema for corpus slices, so a MDCROP view pack and a
-MDLOOM compiled source can exchange small, provenance-bearing context chunks.
+PROOF compiled source can exchange small, provenance-bearing context chunks.
 
-`--target json-report` writes `mdloom.publish.json_report.v1`: a stable
+`--target json-report` writes `proof.publish.json_report.v1`: a stable
 machine-readable compile bundle for CI, agents, and integrations. It includes
 artifact summary, resolved Markdown, section summaries, source metadata,
 dependency refs, diagnostics, and compile counts without replacing Mdport's
 compact retrieval schema.
 
 `--target site` compiles a source tree to static HTML pages and writes a
-navigation `index.html` plus `mdloom-site.json` site manifest in the output
+navigation `index.html` plus `proof-site.json` site manifest in the output
 directory. It is a local static site artifact, not deployment, hosting, or search
 ranking.
 
@@ -201,18 +201,18 @@ content_tags: [guide]
 ```
 
 ```bash
-mdloom stats --by-tag src/guides/
-mdloom check src/guides/ --tag publish --op lint
-mdloom compile src/guides/ --tag publish --content-tag guide
-mdloom status src/guides/
-mdloom index --root docs/guides --output docs/INDEX.md
-mdloom catalog --root docs/guides --output docs/CATALOG.md
+proof stats --by-tag src/guides/
+proof check src/guides/ --tag publish --op lint
+proof compile src/guides/ --tag publish --content-tag guide
+proof status src/guides/
+proof index --root docs/guides --output docs/INDEX.md
+proof catalog --root docs/guides --output docs/CATALOG.md
 ```
 
 Tag filters are opt-in and exact-match. Defaults remain inclusive; multiple
 filters must all match the source frontmatter.
 
-Configure targets in `mdloom.toml`:
+Configure targets in `proof.toml`:
 
 ```toml
 [[compile]]
@@ -226,22 +226,22 @@ output_dir = "docs/presentations"
 
 ## Backfilling existing markdown
 
-Projects that already have `.md` files can bootstrap mdloom sources without a
+Projects that already have `.md` files can bootstrap proof sources without a
 manual rewrite. The first pass is literal-first: preserve current markdown,
 add provenance frontmatter, optionally compile the generated source, and report
 round-trip fidelity.
 
 ```bash
-mdloom backfill docs/ --output-source mdloom-source/ --literal-first --check-roundtrip
+proof backfill docs/ --output-source proof-source/ --literal-first --check-roundtrip
 ```
 
 This creates `.source.md` candidates and `backfill-report.json`. The report
 includes advisory block counts for prose, fences, markdown tables, ASCII table
 candidates, chart-like blocks, diagram-like blocks, and ambiguous blocks.
 
-To start a structured migration, add `--extract-tables`. Mdloom still preserves
+To start a structured migration, add `--extract-tables`. Proof still preserves
 the literal `.source.md` body, and writes high-confidence markdown pipe tables to
-sidecar files like `mdloom-source/guide.tables.json`, recording each extraction in
+sidecar files like `proof-source/guide.tables.json`, recording each extraction in
 the report.
 
 See `docs/guides/14-backfill-migration.md` for a MAXIM-style staged migration
@@ -251,7 +251,7 @@ checklist.
 
 ## Directives
 
-### LaTeX math — `$...$` and `mdloom:math`
+### LaTeX math — `$...$` and `proof:math`
 
 Inline math expands anywhere in prose, bullets, and slide titles:
 
@@ -265,7 +265,7 @@ $\frac{n(n+1)}{2}$          →  n(n+1)/2
 Display blocks render stacked fractions, integrals, matrices, cases:
 
 ````markdown
-```mdloom:math
+```proof:math
 \sum_{i=1}^{n} i = \frac{n(n+1)}{2}
 ```
 ````
@@ -278,15 +278,15 @@ subscripts, √, primes, stacked fractions, integrals with limits, matrices, cas
 ### ASCII presentations — `.slides.source.md`
 
 ````markdown
-```mdloom:slide layout=title
-title: "mdloom"
+```proof:slide layout=title
+title: "proof"
 subtitle: "Markdown quality assurance"
 ```
 ---
-```mdloom:slide layout=title-content
-title: "What mdloom checks"
+```proof:slide layout=title-content
+title: "What proof checks"
 ---
-mdloom:bullets
+proof:bullets
 - ASCII art geometry errors
 [2] - Broken md:// references
 [3] - Missing required sections
@@ -295,9 +295,9 @@ mdloom:bullets
 
 Six layouts: `title` · `title-content` · `two-column` · `section` · `stats` · `blank`
 
-Body directives: `mdloom:bullets` · `mdloom:ol` (numbered list) · `mdloom:columns`
-· `mdloom:callout` · `mdloom:divider` · `mdloom:quote` · `mdloom:centered` · `mdloom:right`
-· `mdloom:stat` · `mdloom:notes`
+Body directives: `proof:bullets` · `proof:ol` (numbered list) · `proof:columns`
+· `proof:callout` · `proof:divider` · `proof:quote` · `proof:centered` · `proof:right`
+· `proof:stat` · `proof:notes`
 
 **Progressive reveal**: bullets prefixed with `[N]` (N ≥ 2) assign that bullet to
 reveal step N. Compile produces one canvas block per step — each page shows all
@@ -305,24 +305,24 @@ bullets with step ≤ current step (cumulative).
 
 ---
 
-### Tree diagrams — `mdloom:tree`
+### Tree diagrams — `proof:tree`
 
 ````markdown
-```mdloom:tree kind=org
-root: mdloom workspace
-- mdloom: CLI + compile pipeline
-- mdloom-canvas: terminal char grid
-- mdloom-math: LaTeX renderer
+```proof:tree kind=org
+root: proof workspace
+- proof: CLI + compile pipeline
+- proof-canvas: terminal char grid
+- proof-math: LaTeX renderer
 ```
 ````
 
 ````markdown
-```mdloom:tree kind=dirtree root=src max_depth=2
+```proof:tree kind=dirtree root=src max_depth=2
 ```
 ````
 
 ````markdown
-```mdloom:tree kind=taxonomy source=md://src/data/features.md name=name parent=category
+```proof:tree kind=taxonomy source=md://src/data/features.md name=name parent=category
 ```
 ````
 
@@ -330,19 +330,19 @@ Kinds: `dirtree` · `org` · `taxonomy` · `dependency` · `outline`
 
 ---
 
-### Data elements — `mdloom:element` and `mdloom:row`
+### Data elements — `proof:element` and `proof:row`
 
 Fixed-width data cells that compose into column-aligned dashboards:
 
 ````markdown
-```mdloom:element kind=sparkline value="1,3,2,5,4,7,9" width=14
+```proof:element kind=sparkline value="1,3,2,5,4,7,9" width=14
 ```
-```mdloom:element kind=value value="99.9%" label="uptime" width=14
+```proof:element kind=value value="99.9%" label="uptime" width=14
 ```
-```mdloom:row source=md://src/data/metrics.md foreach=row separator=" │ "
-mdloom:element kind=label field=name width=24
-mdloom:element kind=badge field=status width=10
-mdloom:element kind=sparkline field=trend width=14
+```proof:row source=md://src/data/metrics.md foreach=row separator=" │ "
+proof:element kind=label field=name width=24
+proof:element kind=badge field=status width=10
+proof:element kind=sparkline field=trend width=14
 ```
 ````
 
@@ -366,17 +366,17 @@ dashboard:
 ---
 ```
 
-Each region is a mini-document supporting any `mdloom:` directive.
+Each region is a mini-document supporting any `proof:` directive.
 DASHBOARD-006 warns if canvas width > 220 (standard terminal threshold).
 
 ---
 
-### Table of contents — `mdloom:toc`
+### Table of contents — `proof:toc`
 
 ````markdown
-```mdloom:toc max-depth=3 style=list
+```proof:toc max-depth=3 style=list
 ```
-```mdloom:toc section="API Reference" max-depth=4 style=numbered
+```proof:toc section="API Reference" max-depth=4 style=numbered
 ```
 ````
 
@@ -385,7 +385,7 @@ Auto-generates from headings in the current file or any `source=md://` file.
 
 ---
 
-### Symbols — `[sym:name]` and `mdloom:symbol`
+### Symbols — `[sym:name]` and `proof:symbol`
 
 Named Unicode glyphs that expand in prose, bullets, and slide titles:
 
@@ -397,16 +397,16 @@ Named Unicode glyphs that expand in prose, bullets, and slide titles:
 ```
 
 Built-in symbols: checkmark, x, warning, info, dot, diamond, star, arrow-*, triangle-*,
-rule-thin, rule-double, and 30+ extended symbols. Custom symbols via `mdloom.toml`.
+rule-thin, rule-double, and 30+ extended symbols. Custom symbols via `proof.toml`.
 
 ---
 
-### Cross-references — `mdloom:xref`
+### Cross-references — `proof:xref`
 
 Resolves a heading's text from another document at compile time:
 
 ````markdown
-```mdloom:xref uri="md://api.md#authentication" format=note
+```proof:xref uri="md://api.md#authentication" format=note
 ```
 ````
 
@@ -416,22 +416,22 @@ Three formats:
 - `callout`: `→ [Authentication](api.md#authentication)`
 
 Optional `label=` override. When the target heading is renamed, recompile
-updates every `mdloom:xref` that pointed to it.
+updates every `proof:xref` that pointed to it.
 
 ---
 
-### Include and layout — `mdloom:include` and `mdloom:layout`
+### Include and layout — `proof:include` and `proof:layout`
 
 ````markdown
-```mdloom:include
+```proof:include
 md://figures/arch.md#:0
 ```
 
-```mdloom:include pin=arch-diagram
+```proof:include pin=arch-diagram
 md://figures/arch.md#:0
 ```
 
-```mdloom:layout gap=4 labels="Before,After"
+```proof:layout gap=4 labels="Before,After"
 md://before.md#:0
 md://after.md#:0
 ```
@@ -439,14 +439,14 @@ md://after.md#:0
 
 `pin=id` declares that this figure must be protected by a DaVinci invariant
 pin with that ID. COMPILE-007 warns if no matching `[[davinci]]` entry exists,
-prompting `mdloom pin <uri> --id <id>`.
+prompting `proof pin <uri> --id <id>`.
 
 ---
 
 ## The md:// URI scheme
 
 Every figure, table, and element in every markdown file has a stable named
-address. mdloom uses `md://` URIs for cross-file references, figure pinning,
+address. proof uses `md://` URIs for cross-file references, figure pinning,
 and error reporting:
 
 ```
@@ -458,7 +458,7 @@ md://docs/math.md:math:pythagorean
 URIs survive edits because they address content by name, not line number. The
 resolver is the `mdpath` crate — see [mdpath](../mdpath/README.md).
 
-`mdloom check` validates that `md://` URIs in source files point to files that
+`proof check` validates that `md://` URIs in source files point to files that
 exist AND that the heading path (e.g., `#api-reference/authentication`) resolves
 to real headings in the target document.
 
@@ -469,11 +469,11 @@ to real headings in the target document.
 Lock a figure's structural invariants. Compile aborts if a future edit violates them:
 
 ```bash
-mdloom spec-generate "md://figures/arch.md:figure:goroutine-scheduler"
-# → paste suggested [[davinci]] block into mdloom.toml
+proof spec-generate "md://figures/arch.md:figure:goroutine-scheduler"
+# → paste suggested [[davinci]] block into proof.toml
 
-mdloom pin "md://figures/arch.md:figure:goroutine-scheduler" --id goroutine-scheduler
-mdloom check --daVinci .
+proof pin "md://figures/arch.md:figure:goroutine-scheduler" --id goroutine-scheduler
+proof check --daVinci .
 ```
 
 ---
@@ -481,21 +481,21 @@ mdloom check --daVinci .
 ## Fix pipeline
 
 ```bash
-mdloom draft . -o draft-plan.json                    # generate a reviewable plan
-mdloom fix --plan draft-plan.json --dry-run          # preview what changes
-mdloom fix --plan draft-plan.json --min-confidence high
-mdloom fix --plan draft-plan.json --min-confidence medium
-mdloom --config mdloom.toml fix --plan draft-plan.json
+proof draft . -o draft-plan.json                    # generate a reviewable plan
+proof fix --plan draft-plan.json --dry-run          # preview what changes
+proof fix --plan draft-plan.json --min-confidence high
+proof fix --plan draft-plan.json --min-confidence medium
+proof --config proof.toml fix --plan draft-plan.json
 ```
 
-`mdloom fix` verifies modified files with the same global `--config` path used by
+`proof fix` verifies modified files with the same global `--config` path used by
 other commands unless `--no-verify` is supplied. Each run writes
-`.mdloom/last-fix.json` with applied/skipped counts, modified files, and
+`.proof/last-fix.json` with applied/skipped counts, modified files, and
 verification status.
 
 ---
 
-## mdloom.toml
+## proof.toml
 
 ```toml
 [files]
@@ -534,13 +534,13 @@ protection = "error"
 
 ## Workspace
 
-The mdloom repo contains three crates:
+The proof repo contains three crates:
 
 | Crate | Purpose |
 |-------|---------|
-| `mdloom` | CLI, linting, compile pipeline |
-| `mdloom-canvas` | Fixed-width ASCII char grid (usable standalone in any TUI) |
-| `mdloom-math` | LaTeX→terminal renderer (standalone library) |
+| `proof` | CLI, linting, compile pipeline |
+| `proof-canvas` | Fixed-width ASCII char grid (usable standalone in any TUI) |
+| `proof-math` | LaTeX→terminal renderer (standalone library) |
 
 `mdpath` lives in a sibling repo and handles `md://` URI parsing and resolution.
 
@@ -551,7 +551,7 @@ The mdloom repo contains three crates:
 Compiled guides live in `docs/guides/`. Rebuild with:
 
 ```bash
-mdloom compile --watch
+proof compile --watch
 ```
 
 | Guide | Content |
@@ -564,8 +564,8 @@ mdloom compile --watch
 | [Trees](docs/guides/05-trees.md) | Tree diagrams |
 | [Dashboard](docs/guides/06-dashboard.md) | Canvas regions |
 | [Compile](docs/guides/07-compile.md) | Full directive reference |
-| [Lint](docs/guides/08-lint.md) | Check rules and mdloom.toml |
-| [Crates](docs/guides/09-crates.md) | mdloom-canvas and mdloom-math APIs |
+| [Lint](docs/guides/08-lint.md) | Check rules and proof.toml |
+| [Crates](docs/guides/09-crates.md) | proof-canvas and proof-math APIs |
 | [MDCROP](docs/guides/12-mdcrop.md) | Corpus-intelligence adapter |
 
 ---

@@ -4,7 +4,7 @@ Each row is one period: `label: open, high, low, close`. Up-periods (close
 ≥ open) render with `O` body; down-periods with `█`. The wick `│` spans
 [low, high].
 
-<!-- mdloom:compiled from="mdloom:chart" -->
+<!-- proof:compiled from="proof:chart" -->
 ```
               ACME weekly
 120 ┤                                   │
@@ -19,7 +19,7 @@ Each row is one period: `label: open, high, low, close`. Up-periods (close
  95 ┤ │
     └┬───────┬────────┬───────┬────────┬
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
 Wk3 closed below its open — the down-body is visually distinct from the
 surrounding up-weeks.

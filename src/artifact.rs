@@ -42,13 +42,13 @@ pub struct ArtifactDiagnostic {
 }
 
 pub fn manifest_path(root: &Path) -> PathBuf {
-    root.join(".mdloom").join("artifacts.json")
+    root.join(".proof").join("artifacts.json")
 }
 
 pub fn write_manifest(root: &Path, artifacts: Vec<ArtifactRecord>) -> Result<PathBuf> {
     let manifest = ArtifactManifest {
         schema_version: "1".to_string(),
-        generated_by: "mdloom compile".to_string(),
+        generated_by: "proof compile".to_string(),
         config_root: root.to_path_buf(),
         generated_at_ms: now_ms(),
         artifacts,

@@ -1,10 +1,10 @@
 # US-99 — Side-by-side layout of three figures
 
-`mdloom:layout` composes multiple figures into a single ASCII collage with
+`proof:layout` composes multiple figures into a single ASCII collage with
 gaps and labels. Useful in slides and dashboards where you want a row of
 visualizations.
 
-```mdloom:layout gap=4 align=top labels="One Two Three"
+```proof:layout gap=4 align=top labels="One Two Three"
 md://src/data/features.md#:table:0
 md://src/data/features.md#:table:0
 md://src/data/features.md#:table:0

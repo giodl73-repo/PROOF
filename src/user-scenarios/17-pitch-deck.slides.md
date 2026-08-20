@@ -1,4 +1,4 @@
-<!-- mdloom:compiled from="mdloom:slides" count=9 -->
+<!-- proof:compiled from="proof:slides" count=9 -->
 ```slides
 SLIDE 1 ─────────────────────────────────────────────────────────────────────── 1/9
 
@@ -99,10 +99,10 @@ SLIDE 5 ────────────────────────
 ────────────────────────────────────────────────────────────────────────────────
 LEFT COLUMN
 
-● mdloom: markdown compiler + linter
+● proof: markdown compiler + linter
 ● md:// URI scheme: stable named addresses
-● mdloom-math: LaTeX → terminal rendering
-● mdloom-canvas: TUI composition layer
+● proof-math: LaTeX → terminal rendering
+● proof-canvas: TUI composition layer
 
 
 
@@ -166,10 +166,10 @@ SLIDE 8 ────────────────────────
 
 
 ────────────────────────────────────────────────────────────────────────────────
-mdloom:stat label="Stars" value="2.1k" delta="+400"
-mdloom:stat label="Downloads" value="18k" delta="+6k"
-mdloom:stat label="Repos using" value="47" delta="+12"
-mdloom:stat label="Test pass rate" value="100%" delta="+0"
+proof:stat label="Stars" value="2.1k" delta="+400"
+proof:stat label="Downloads" value="18k" delta="+6k"
+proof:stat label="Repos using" value="47" delta="+12"
+proof:stat label="Test pass rate" value="100%" delta="+0"
 ```
 
 
@@ -196,7 +196,7 @@ SLIDE 9 ────────────────────────
 
 
                                     Join us
-                         github.com/giodl73-repo/MDLOOM
+                         github.com/giodl73-repo/PROOF
 
 
 
@@ -208,4 +208,4 @@ SLIDE 9 ────────────────────────
 
 
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->

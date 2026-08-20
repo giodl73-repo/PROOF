@@ -3,8 +3,8 @@
 Edge case: a chart with exactly one data point. The bar should render at
 the full bar-area width (since max=value).
 
-<!-- mdloom:compiled from="mdloom:chart" -->
+<!-- proof:compiled from="proof:chart" -->
 ```
 Total  │ ████████████████████████████ 100
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->

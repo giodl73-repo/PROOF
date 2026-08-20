@@ -4,18 +4,18 @@ slides:
   height: 24
 ---
 
-```mdloom:slide layout=title title="Project Phases"
+```proof:slide layout=title title="Project Phases"
 ```
 
 ---
 
-```mdloom:slide layout=section title="Phase 1: Foundations"
+```proof:slide layout=section title="Phase 1: Foundations"
 ```
 
 ---
 
-```mdloom:slide layout=title-content title="Phase 1 work"
-mdloom:bullets
+```proof:slide layout=title-content title="Phase 1 work"
+proof:bullets
 - Inventory existing components
 - Fix obvious gaps
 - Cut a release
@@ -23,13 +23,13 @@ mdloom:bullets
 
 ---
 
-```mdloom:slide layout=section title="Phase 2: Features"
+```proof:slide layout=section title="Phase 2: Features"
 ```
 
 ---
 
-```mdloom:slide layout=title-content title="Phase 2 work"
-mdloom:bullets
+```proof:slide layout=title-content title="Phase 2 work"
+proof:bullets
 - Author guides
 - Stress-test with scenarios
 - Find the next set of bugs

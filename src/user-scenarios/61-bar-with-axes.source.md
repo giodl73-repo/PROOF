@@ -1,6 +1,6 @@
 # US-61 — Bar chart with axis labels and title
 
-```mdloom:chart kind=bar width=60 title="Q4 product mix" x-label="units" y-label="product line"
+```proof:chart kind=bar width=60 title="Q4 product mix" x-label="units" y-label="product line"
 Widgets: 240
 Gizmos: 180
 Sprockets: 95

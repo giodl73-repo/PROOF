@@ -1,15 +1,15 @@
 use crate::cmd_context::GlobalOptions;
 use anyhow::{bail, Context, Result};
 use clap::Subcommand;
-use mdloom_lib::lint::load_config_for_path as load_config;
-use mdloom_lib::mdcrop_side_info;
+use proof_lib::lint::load_config_for_path as load_config;
+use proof_lib::mdcrop_side_info;
 use serde::Serialize;
 use std::collections::BTreeSet;
 use std::io::{self, Write};
 use std::path::{Component, Path, PathBuf};
 use std::process::{self, Command};
 
-const DEFAULT_VIEW_OUTPUT: &str = ".mdcrop\\views\\mdloom-view.json";
+const DEFAULT_VIEW_OUTPUT: &str = ".mdcrop\\views\\proof-view.json";
 const DEFAULT_VIEW_DIR: &str = ".mdcrop\\views";
 
 #[derive(clap::Args)]
@@ -32,7 +32,7 @@ enum MdcropCommand {
     InspectViews(InspectViewsArgs),
     /// Inspect MDCROP views and sync compiler side-info in one preflight step
     Prepare(PrepareArgs),
-    /// Write a mdcrop.view.v1 recipe from MDLOOM root/config/tag settings
+    /// Write a mdcrop.view.v1 recipe from PROOF root/config/tag settings
     View(ViewArgs),
     /// Run a persisted mdcrop.view.v1 recipe as a JSON context pack
     RunView(RunViewArgs),
@@ -52,9 +52,9 @@ enum MdcropCommand {
     Headings(SideInfoArgs),
     /// Render headings for one source from MDCROP heading side-info
     HeadingList(HeadingListArgs),
-    /// Report MDLOOM generated artifact manifest health through MDCROP
+    /// Report PROOF generated artifact manifest health through MDCROP
     Artifacts(ArtifactsArgs),
-    /// Generate side-info JSON files under .mdloom\side-info for MDLOOM compiler use
+    /// Generate side-info JSON files under .proof\side-info for PROOF compiler use
     Sync(SyncArgs),
 }
 
@@ -141,11 +141,11 @@ struct PrepareArgs {
     /// View store directory to inspect before syncing side-info
     #[arg(long = "dir", default_value = DEFAULT_VIEW_DIR)]
     dir: PathBuf,
-    /// mdcrop.view.v1 recipe to sync into .mdloom\side-info
-    #[arg(long, default_value = ".mdcrop\\views\\mdloom-guides.json")]
+    /// mdcrop.view.v1 recipe to sync into .proof\side-info
+    #[arg(long, default_value = ".mdcrop\\views\\proof-guides.json")]
     view: PathBuf,
     /// Directory where links/backlinks/frontmatter/headings JSON files are written
-    #[arg(long, default_value = ".mdloom\\side-info")]
+    #[arg(long, default_value = ".proof\\side-info")]
     output_dir: PathBuf,
 }
 
@@ -158,7 +158,7 @@ struct ViewArgs {
     #[arg(long)]
     output: Option<PathBuf>,
     /// View name
-    #[arg(long, default_value = "mdloom-view")]
+    #[arg(long, default_value = "proof-view")]
     name: String,
     /// Context-mdcrop task prompt for mdcrop view --file
     #[arg(long)]
@@ -238,7 +238,7 @@ struct BacklinkListArgs {
     /// MDCROP backlinks JSON report to consume
     #[arg(
         long = "side-info",
-        default_value = ".mdloom\\side-info\\backlinks.json"
+        default_value = ".proof\\side-info\\backlinks.json"
     )]
     side_info: PathBuf,
     /// Render format: list, table, or count
@@ -252,7 +252,7 @@ struct BacklinkListArgs {
 #[derive(clap::Args)]
 struct LinkListArgs {
     /// MDCROP links JSON report to consume
-    #[arg(long = "side-info", default_value = ".mdloom\\side-info\\links.json")]
+    #[arg(long = "side-info", default_value = ".proof\\side-info\\links.json")]
     side_info: PathBuf,
     /// Optional source/page to render outbound links for
     #[arg(long)]
@@ -274,10 +274,7 @@ struct HeadingListArgs {
     #[arg(long)]
     source: String,
     /// MDCROP headings JSON report to consume
-    #[arg(
-        long = "side-info",
-        default_value = ".mdloom\\side-info\\headings.json"
-    )]
+    #[arg(long = "side-info", default_value = ".proof\\side-info\\headings.json")]
     side_info: PathBuf,
     /// Render format: list, table, or count
     #[arg(long, default_value = "list", value_parser = ["list", "table", "count"])]
@@ -292,7 +289,7 @@ struct FrontmatterListArgs {
     /// MDCROP frontmatter JSON report to consume
     #[arg(
         long = "side-info",
-        default_value = ".mdloom\\side-info\\frontmatter.json"
+        default_value = ".proof\\side-info\\frontmatter.json"
     )]
     side_info: PathBuf,
     /// Frontmatter field to filter or render, e.g. tags or status
@@ -314,10 +311,10 @@ struct FrontmatterListArgs {
 
 #[derive(clap::Args)]
 struct ArtifactsArgs {
-    /// MDLOOM repository root. MDCROP reads .mdloom\artifacts.json under this root
+    /// PROOF repository root. MDCROP reads .proof\artifacts.json under this root
     #[arg(long)]
     root: Option<PathBuf>,
-    /// Explicit MDLOOM artifact manifest path
+    /// Explicit PROOF artifact manifest path
     #[arg(long)]
     manifest: Option<PathBuf>,
     /// Optional output path. Defaults to MDCROP stdout
@@ -334,7 +331,7 @@ struct SyncArgs {
     #[arg(long)]
     view: Option<PathBuf>,
     /// Directory where links/backlinks/frontmatter/headings JSON files are written
-    #[arg(long, default_value = ".mdloom\\side-info")]
+    #[arg(long, default_value = ".proof\\side-info")]
     output_dir: PathBuf,
     /// Restrict analyzed files to one or more extensions, e.g. --extension md
     #[arg(long = "extension")]
@@ -400,13 +397,13 @@ fn build_status_args(args: StatusArgs) -> Result<Vec<String>> {
 
 pub(crate) fn build_status_request_args(args: MdcropStatusRequest) -> Result<Vec<String>> {
     if args.root.is_some() && args.view.is_some() {
-        bail!("mdloom mdcrop status accepts either --root or --view, not both");
+        bail!("proof mdcrop status accepts either --root or --view, not both");
     }
     if args.root.is_none() && args.view.is_none() {
-        bail!("mdloom mdcrop status requires --root or --view");
+        bail!("proof mdcrop status requires --root or --view");
     }
     if !args.strict && !args.strict_on.is_empty() {
-        bail!("mdloom mdcrop status --strict-on requires --strict");
+        bail!("proof mdcrop status --strict-on requires --strict");
     }
     for strict_on in &args.strict_on {
         validate_status_strict_policy(strict_on)?;
@@ -454,7 +451,7 @@ fn validate_status_strict_policy(policy: &str) -> Result<()> {
     match policy {
         "broken-links" | "orphan-pages" | "duplicate-anchors" => Ok(()),
         other => bail!(
-            "mdloom mdcrop status --strict-on must be broken-links, orphan-pages, or duplicate-anchors, got {:?}",
+            "proof mdcrop status --strict-on must be broken-links, orphan-pages, or duplicate-anchors, got {:?}",
             other
         ),
     }
@@ -503,15 +500,15 @@ fn run_inspect_views(
 
 fn build_inspect_views_args(args: InspectViewsArgs) -> Result<Vec<String>> {
     if args.file.is_some() && args.strict {
-        bail!("mdloom mdcrop inspect-views --strict requires store inspection with --dir");
+        bail!("proof mdcrop inspect-views --strict requires store inspection with --dir");
     }
     if args.file.is_some() && args.dir != Path::new(DEFAULT_VIEW_DIR) {
-        bail!("mdloom mdcrop inspect-views accepts either --file or --dir, not both");
+        bail!("proof mdcrop inspect-views accepts either --file or --dir, not both");
     }
     if args.file.is_none()
         && (args.query.is_some() || !args.extensions.is_empty() || !args.exclude_dirs.is_empty())
     {
-        bail!("mdloom mdcrop inspect-views --query, --extension, and --exclude-dir require --file");
+        bail!("proof mdcrop inspect-views --query, --extension, and --exclude-dir require --file");
     }
 
     let mut mdcrop_args = vec!["view".to_string(), "--inspect".to_string()];
@@ -545,7 +542,7 @@ fn reject_non_json_inspect_format(globals: &GlobalOptions) -> Result<()> {
     match globals.format() {
         "text" | "json" => Ok(()),
         other => bail!(
-            "mdloom mdcrop inspect-views emits JSON; use text/json output format, got {:?}",
+            "proof mdcrop inspect-views emits JSON; use text/json output format, got {:?}",
             other
         ),
     }
@@ -555,7 +552,7 @@ fn reject_non_json_artifact_global_format(command: &str, globals: &GlobalOptions
     match globals.format() {
         "text" | "json" => Ok(()),
         other => bail!(
-            "mdloom mdcrop {} writes JSON artifacts; use text/json output format, got {:?}",
+            "proof mdcrop {} writes JSON artifacts; use text/json output format, got {:?}",
             command,
             other
         ),
@@ -565,7 +562,7 @@ fn reject_non_json_artifact_global_format(command: &str, globals: &GlobalOptions
 fn reject_global_output_for_output_dir(command: &str, globals: &GlobalOptions) -> Result<()> {
     if globals.output().is_some() {
         bail!(
-            "mdloom mdcrop {} writes multiple artifacts; use --output-dir instead of global -o/--output",
+            "proof mdcrop {} writes multiple artifacts; use --output-dir instead of global -o/--output",
             command
         );
     }
@@ -728,7 +725,7 @@ fn validate_prefix_cache(prefix_cache: &str) -> Result<()> {
     match prefix_cache {
         "generic" => Ok(()),
         other => bail!(
-            "mdloom mdcrop run-view --prefix-cache must be generic, got {:?}",
+            "proof mdcrop run-view --prefix-cache must be generic, got {:?}",
             other
         ),
     }
@@ -1000,7 +997,7 @@ fn reject_non_markdown_snippet_global_format(command: &str, globals: &GlobalOpti
     match globals.format() {
         "text" | "markdown" | "list" | "table" | "count" => Ok(()),
         other => bail!(
-            "mdloom mdcrop {} renders Markdown snippets; use text/markdown global output format or list/table/count snippet format, got {:?}",
+            "proof mdcrop {} renders Markdown snippets; use text/markdown global output format or list/table/count snippet format, got {:?}",
             command,
             other
         ),
@@ -1032,12 +1029,12 @@ fn build_side_info_args(
 ) -> Result<Vec<String>> {
     if args.root.is_some() && args.view.is_some() {
         bail!(
-            "mdloom mdcrop {} accepts either --root or --view, not both",
+            "proof mdcrop {} accepts either --root or --view, not both",
             command
         );
     }
     if args.root.is_none() && args.view.is_none() {
-        bail!("mdloom mdcrop {} requires --root or --view", command);
+        bail!("proof mdcrop {} requires --root or --view", command);
     }
 
     let mut mdcrop_args = vec![command.to_string()];
@@ -1074,10 +1071,10 @@ fn run_artifacts(mdcrop_bin: PathBuf, args: ArtifactsArgs, globals: &GlobalOptio
 
 fn build_artifacts_args(args: ArtifactsArgs, globals: &GlobalOptions) -> Result<Vec<String>> {
     if args.root.is_some() && args.manifest.is_some() {
-        bail!("mdloom mdcrop artifacts accepts either --root or --manifest, not both");
+        bail!("proof mdcrop artifacts accepts either --root or --manifest, not both");
     }
     if args.root.is_none() && args.manifest.is_none() {
-        bail!("mdloom mdcrop artifacts requires --root or --manifest");
+        bail!("proof mdcrop artifacts requires --root or --manifest");
     }
 
     let mut mdcrop_args = vec!["artifacts".to_string()];
@@ -1112,10 +1109,10 @@ fn run_sync(mdcrop_bin: PathBuf, args: SyncArgs, globals: &GlobalOptions) -> Res
 
 fn build_sync_args(args: SyncArgs) -> Result<Vec<Vec<String>>> {
     if args.root.is_some() && args.view.is_some() {
-        bail!("mdloom mdcrop sync accepts either --root or --view, not both");
+        bail!("proof mdcrop sync accepts either --root or --view, not both");
     }
     if args.root.is_none() && args.view.is_none() {
-        bail!("mdloom mdcrop sync requires --root or --view");
+        bail!("proof mdcrop sync requires --root or --view");
     }
 
     std::fs::create_dir_all(&args.output_dir)
@@ -1165,7 +1162,7 @@ fn mdcrop_report_format_value(format: &str) -> Result<String> {
     match format {
         "json" | "markdown" => Ok(format.to_string()),
         other => bail!(
-            "mdloom mdcrop report format must be json or markdown, got {:?}",
+            "proof mdcrop report format must be json or markdown, got {:?}",
             other
         ),
     }
@@ -1629,7 +1626,7 @@ mod tests {
         let output_dir = dir.path().join("side-info");
         let args = build_prepare_args(PrepareArgs {
             dir: PathBuf::from(".mdcrop\\views"),
-            view: PathBuf::from(".mdcrop\\views\\mdloom-guides.json"),
+            view: PathBuf::from(".mdcrop\\views\\proof-guides.json"),
             output_dir: output_dir.clone(),
         })
         .unwrap();
@@ -1645,7 +1642,7 @@ mod tests {
                 "view",
                 "--inspect",
                 "--file",
-                ".mdcrop\\views\\mdloom-guides.json"
+                ".mdcrop\\views\\proof-guides.json"
             ]
         );
         assert_eq!(args[2][0], "links");
@@ -1654,7 +1651,7 @@ mod tests {
         assert_eq!(args[5][0], "headings");
         for mdcrop_args in &args[2..] {
             assert!(mdcrop_args.contains(&"--view".to_string()));
-            assert!(mdcrop_args.contains(&".mdcrop\\views\\mdloom-guides.json".to_string()));
+            assert!(mdcrop_args.contains(&".mdcrop\\views\\proof-guides.json".to_string()));
             assert!(mdcrop_args.contains(&"--format".to_string()));
             assert!(mdcrop_args.contains(&"json".to_string()));
         }
@@ -1665,7 +1662,7 @@ mod tests {
     fn view_recipe_maps_config_and_frontmatter_filters() {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(
-            dir.path().join("mdloom.toml"),
+            dir.path().join("proof.toml"),
             r#"
 [files]
 include = ["src/**/*.source.md", "docs/**/*.md"]
@@ -2027,7 +2024,7 @@ exclude = ["target/**", "node_modules/**"]
         let args = build_artifacts_args(
             ArtifactsArgs {
                 root: None,
-                manifest: Some(PathBuf::from(".mdloom\\artifacts.json")),
+                manifest: Some(PathBuf::from(".proof\\artifacts.json")),
                 output: Some(PathBuf::from("ARTIFACTS.md")),
             },
             &globals("markdown"),
@@ -2039,7 +2036,7 @@ exclude = ["target/**", "node_modules/**"]
             vec![
                 "artifacts",
                 "--manifest",
-                ".mdloom\\artifacts.json",
+                ".proof\\artifacts.json",
                 "--format",
                 "markdown",
                 "--output",
@@ -2094,7 +2091,7 @@ exclude = ["target/**", "node_modules/**"]
         let err = build_artifacts_args(
             ArtifactsArgs {
                 root: Some(PathBuf::from(".")),
-                manifest: Some(PathBuf::from(".mdloom\\artifacts.json")),
+                manifest: Some(PathBuf::from(".proof\\artifacts.json")),
                 output: None,
             },
             &globals("text"),

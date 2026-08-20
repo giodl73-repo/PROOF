@@ -1,4 +1,4 @@
-/// LaTeX tokenizer for mdloom math rendering.
+/// LaTeX tokenizer for proof math rendering.
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {

@@ -1,4 +1,4 @@
-# mdloom Built-in Symbol Catalog
+# proof Built-in Symbol Catalog
 
 | name | glyph | category | aliases |
 |------|-------|----------|---------|

@@ -1,5 +1,5 @@
 #![allow(dead_code, unused_imports, unused_variables)]
-//! mdloom-math — LaTeX math rendering to Unicode and ASCII art for terminal output.
+//! proof-math — LaTeX math rendering to Unicode and ASCII art for terminal output.
 //!
 //! No LaTeX installation required. Pure Rust implementation covering:
 //!
@@ -10,7 +10,7 @@
 //! # Inline expansion
 //!
 //! ```rust
-//! use mdloom_math::expand_inline_math;
+//! use proof_math::expand_inline_math;
 //!
 //! let (result, diags) = expand_inline_math("$\\alpha + \\beta = \\gamma$");
 //! assert_eq!(result, "α + β = γ");
@@ -20,7 +20,7 @@
 //! # Display blocks
 //!
 //! ```rust
-//! use mdloom_math::{render_display_math, MathAlign};
+//! use proof_math::{render_display_math, MathAlign};
 //!
 //! let (lines, diags) = render_display_math(r"\frac{n(n+1)}{2}", 0, MathAlign::Left);
 //! // lines: ["n(n+1)", "──────", "  2"]
@@ -56,7 +56,7 @@ pub use tokenizer::{DiagSeverity, MathDiag};
 /// most terminal fonts render at 1 column.
 ///
 /// ```
-/// use mdloom_math::visual_width;
+/// use proof_math::visual_width;
 /// assert_eq!(visual_width("hello"), 5);
 /// assert_eq!(visual_width("─┼─"), 3);   // box-drawing forced to 1 col each
 /// assert_eq!(visual_width("日本"), 4);  // CJK wide, 2 cols each

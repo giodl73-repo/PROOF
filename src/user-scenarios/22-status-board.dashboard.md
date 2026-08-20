@@ -1,4 +1,4 @@
-<!-- mdloom:compiled from="mdloom:dashboard" title="Service Status" -->
+<!-- proof:compiled from="proof:dashboard" title="Service Status" -->
 ```dashboard
 SERVICE STATUS BOARD                                    [sym:checkmark] All sys…
 
@@ -17,8 +17,8 @@ Last 24 hours:
 -23ms trend
 
 
-Updated: 2026-04-28 02:30 UTC  |  mdloom compile --watch  |  Next refresh: 60s
+Updated: 2026-04-28 02:30 UTC  |  proof compile --watch  |  Next refresh: 60s
 
 
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->

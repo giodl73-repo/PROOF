@@ -3,11 +3,11 @@
 Render a TOC for the doc, but narrow it to the descendants of `Setup` —
 exclude the rest of the document from the table.
 
-<!-- mdloom:compiled from="mdloom:toc" -->
+<!-- proof:compiled from="proof:toc" -->
 - Install
 - Configure
 - First compile
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
 ## Setup
 ### Install

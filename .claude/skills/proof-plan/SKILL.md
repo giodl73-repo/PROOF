@@ -1,12 +1,12 @@
 ---
-name: mdloom-plan
-description: "Create mdloom wave or pulse plans with mission, artifacts, governing roles, gates, and non-goals."
-tags: [mdloom, plan, wave, pulse, gates]
+name: proof-plan
+description: "Create proof wave or pulse plans with mission, artifacts, governing roles, gates, and non-goals."
+tags: [proof, plan, wave, pulse, gates]
 ---
 
-# mdloom-plan
+# proof-plan
 
-Use this skill when drafting a mdloom quality wave, architecture refactor,
+Use this skill when drafting a proof quality wave, architecture refactor,
 coverage sweep, docs contract repair, or execution plan.
 
 ## Wave Card Minimum

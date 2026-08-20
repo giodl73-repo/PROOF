@@ -1,4 +1,4 @@
-<!-- mdloom:compiled from="mdloom:slides" count=9 -->
+<!-- proof:compiled from="proof:slides" count=9 -->
 ```slides
 SLIDE 1 ─────────────────────────────────────────────────────────────────────── 1/9
 
@@ -68,11 +68,11 @@ SLIDE 4 ────────────────────────
 
 
 ────────────────────────────────────────────────────────────────────────────────
-● mdloom v0.5.0 — math rendering, slides, dashboards, watch mode
+● proof v0.5.0 — math rendering, slides, dashboards, watch mode
   ◦ 680 tests passing
-  ◦ mdloom-canvas and mdloom-math extracted as standalone crates
+  ◦ proof-canvas and proof-math extracted as standalone crates
 ● maxim library — 0 errors across 2,703 files
-● Workspace restructure — mdloom + mdpath at C:\src
+● Workspace restructure — proof + mdpath at C:\src
 ● ```
 
 
@@ -152,10 +152,10 @@ SLIDE 8 ────────────────────────
 
 
 ────────────────────────────────────────────────────────────────────────────────
-mdloom:stat label="Tests" value="680" delta="+127"
-mdloom:stat label="Scenarios" value="60" delta="+52"
-mdloom:stat label="Specs" value="7" delta="+6"
-mdloom:stat label="Bugs fixed" value="8" delta="+8"
+proof:stat label="Tests" value="680" delta="+127"
+proof:stat label="Scenarios" value="60" delta="+52"
+proof:stat label="Specs" value="7" delta="+6"
+proof:stat label="Bugs fixed" value="8" delta="+8"
 ```
 
 
@@ -190,4 +190,4 @@ SLIDE 9 ────────────────────────
 
 
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->

@@ -4,7 +4,7 @@
 
 This guide covers authentication and endpoints. For background on the data model,
 
-```mdloom:xref uri="md://src/user-scenarios/33-xref-guide.source.md#data-model" format=note
+```proof:xref uri="md://src/user-scenarios/33-xref-guide.source.md#data-model" format=note
 ```
 
 ## Authentication
@@ -17,7 +17,7 @@ Authorization: Bearer <api-key>
 
 For token generation, see:
 
-```mdloom:xref uri="md://src/user-scenarios/33-xref-guide.source.md#token-generation"
+```proof:xref uri="md://src/user-scenarios/33-xref-guide.source.md#token-generation"
 ```
 
 ## Endpoints

@@ -7,9 +7,9 @@ when the source is missing. For now, we use placeholder text.
 ## Feature Overview
 
 Our feature taxonomy (data file coming in next sprint — will use
-`mdloom:tree kind=taxonomy source=md://src/data/features-v2.md`):
+`proof:tree kind=taxonomy source=md://src/data/features-v2.md`):
 
-mdloom:bullets
+proof:bullets
 - Category: math
   - LaTeX inline rendering
   - Display block rendering
@@ -22,7 +22,7 @@ mdloom:bullets
 
 ## Performance Comparison
 
-Benchmark results (data file pending — will use `mdloom:row source=md://...`):
+Benchmark results (data file pending — will use `proof:row source=md://...`):
 
 | Scenario | Ops/sec | Improvement |
 |----------|---------|-------------|
@@ -30,7 +30,7 @@ Benchmark results (data file pending — will use `mdloom:row source=md://...`):
 
 ## What's implemented today
 
-mdloom:bullets
+proof:bullets
 - [sym:checkmark] Core algorithm — complete
 - [sym:checkmark] Basic API — complete
 - [sym:arrow-right] Performance tuning — in progress

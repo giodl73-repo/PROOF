@@ -25,7 +25,7 @@ theme tokens through CSS variables.
   - `tests/integration_tests.rs`
 - Generated/user artifacts:
   - HTML files
-  - `mdloom-site.json`
+  - `proof-site.json`
 
 ## Pre-implementation scout
 

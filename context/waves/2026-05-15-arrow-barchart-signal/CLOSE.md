@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Closed mdloom-owned false positives in two remaining ASCII families:
+Closed proof-owned false positives in two remaining ASCII families:
 
 - `ascii_arrow_gap` now ignores prose/source arrows such as `->` and decorative
   spaced axis rulers while still warning on isolated breaks in Unicode arrow
@@ -15,7 +15,7 @@ Closed mdloom-owned false positives in two remaining ASCII families:
 
 ## Corpus Result
 
-MAXIM (`mdloom stats --by-code --config C:\src\maxim\mdloom.toml C:\src\maxim\`):
+MAXIM (`proof stats --by-code --config C:\src\maxim\proof.toml C:\src\maxim\`):
 
 - Before wave: 1354 warnings, 0 errors.
 - After wave: 1142 warnings, 0 errors.
@@ -26,5 +26,5 @@ MAXIM (`mdloom stats --by-code --config C:\src\maxim\mdloom.toml C:\src\maxim\`)
 
 Remaining dominant warnings are schema/content policy (`md_missing_section`,
 `md_missing_pattern`) and strict cell-padding style (`ascii_cell_padding`), not
-obvious mdloom-side detector bugs from this wave.
+obvious proof-side detector bugs from this wave.
 

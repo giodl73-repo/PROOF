@@ -2,7 +2,7 @@
 
 ## Setup
 
-```mdloom:ol
+```proof:ol
 - Place the board between 2-4 players
 - Each player takes:
   - 4 leaders (King, Priest, Trader, Farmer) in their color
@@ -15,22 +15,22 @@
 
 On your turn, you may take up to **2 actions**:
 
-mdloom:ol
+proof:ol
 - Place a leader on the board (adjacent to a red temple)
 - Play a tile from your hand onto the board
 - Replace any number of tiles from your hand
 - Withdraw a leader from the board
 
-mdloom:callout style=key
+proof:callout style=key
 You may take the same action twice, or mix and match. Passing is allowed.
 
 ## Conflicts
 
-mdloom:callout style=warning
+proof:callout style=warning
 Conflicts trigger when leaders of the same color meet in a kingdom or when
 kingdoms merge. The attacker always declares the conflict type.
 
-```mdloom:ol
+```proof:ol
 - External conflict: attacker vs. defender leaders of same color
   - Each player counts support tiles (red for religious, etc.)
   - Loser's leader is removed; winner takes 1 victory point
@@ -41,7 +41,7 @@ kingdoms merge. The attacker always declares the conflict type.
 
 ## Victory points
 
-mdloom:right
+proof:right
 [sym:star] Most points in your *weakest* category wins [sym:star]
 
 | Color | Scores from |

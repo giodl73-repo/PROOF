@@ -22,7 +22,7 @@ Mdport chunk boundaries where practical, and PDF text output.
   - `docs/specs/publication-ast.md`
   - `tests/integration_tests.rs`
 - Generated/user artifacts:
-  - `*.mdloom-report.json`
+  - `*.proof-report.json`
   - `*.mdport.json`
   - `*.pdf`
 

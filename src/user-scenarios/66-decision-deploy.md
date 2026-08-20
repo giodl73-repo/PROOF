@@ -1,6 +1,6 @@
 # US-66 — Decision tree: deployment escalation
 
-<!-- mdloom:compiled from="mdloom:tree kind=decision" uri="" -->
+<!-- proof:compiled from="proof:tree kind=decision" uri="" -->
 ```decision
 Tests passing?
 ├── Yes → Coverage above 80%?
@@ -12,7 +12,7 @@ Tests passing?
 │   └── No  → hold-for-review
 └── No  → block
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
 Five-node decision tree with two leaf states (`done`, `rollback`) plus
 two early-exit leaves (`block`, `hold-for-review`).

@@ -1,4 +1,4 @@
-//! mdloom-canvas — Fixed-width ASCII character grid for terminal and TUI composition.
+//! proof-canvas — Fixed-width ASCII character grid for terminal and TUI composition.
 //!
 //! A `Canvas` is a rectangular buffer of characters at exact width × height.
 //! Content is placed by `paste(x, y, lines)` and rendered to a newline-terminated
@@ -9,7 +9,7 @@
 //! # Example
 //!
 //! ```rust
-//! use mdloom_canvas::Canvas;
+//! use proof_canvas::Canvas;
 //!
 //! let mut canvas = Canvas::new(40, 10);
 //! canvas.paste(0, 0, &["╔══════════════════╗"]);

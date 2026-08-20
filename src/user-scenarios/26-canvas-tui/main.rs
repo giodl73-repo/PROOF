@@ -1,17 +1,17 @@
-/// US-26: mdloom-canvas embedded in a ratatui TUI.
+/// US-26: proof-canvas embedded in a ratatui TUI.
 ///
-/// mdloom-canvas handles the fixed-width ASCII grid; ratatui handles
+/// proof-canvas handles the fixed-width ASCII grid; ratatui handles
 /// terminal I/O, event loop, and widget framing. The two integrate at
 /// Canvas::render() → ratatui Paragraph.
 ///
 /// Run:  cargo run --example canvas-tui
 ///
 /// Cargo.toml dependencies:
-///   mdloom-canvas = { path = "../../crates/mdloom-canvas" }
+///   proof-canvas = { path = "../../crates/proof-canvas" }
 ///   ratatui = "0.27"
 ///   crossterm = "0.27"
 
-use mdloom_canvas::Canvas;
+use proof_canvas::Canvas;
 
 // ── Simulated data — in a real app these come from metrics or state. ─────────
 
@@ -45,7 +45,7 @@ impl AppState {
     }
 }
 
-// ── Build the mdloom-canvas layout. ───────────────────────────────────────────
+// ── Build the proof-canvas layout. ───────────────────────────────────────────
 //
 // Terminal is 80×24. Layout:
 //   Row 0:     header bar (80×1)
@@ -82,7 +82,7 @@ fn build_canvas(state: &AppState) -> Canvas {
     canvas.paste(0, 5, &["╠══ Logs ══════════════════════════════════════════════════════════════════════╣"]);
 
     // ── Log panel (rows 6-18, 13 visible lines) ───────────────────────────────
-    let visible = mdloom_canvas::scroll_clip(
+    let visible = proof_canvas::scroll_clip(
         &state.log_lines.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
         12,
         state.scroll_offset,

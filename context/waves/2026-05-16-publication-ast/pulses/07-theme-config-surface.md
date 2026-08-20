@@ -25,8 +25,8 @@ publish artifacts.
   - `docs/specs/publication-ast.md`
   - `tests/integration_tests.rs`
 - Generated/user artifacts:
-  - `.mdloom/artifacts.json`
-  - `*.mdloom-report.json`
+  - `.proof/artifacts.json`
+  - `*.proof-report.json`
   - target outputs
 
 ## Pre-implementation scout
@@ -37,7 +37,7 @@ publish artifacts.
 
 ## Deliverables checklist
 
-- [ ] Add `mdloom compile --theme <name>` for publish targets.
+- [ ] Add `proof compile --theme <name>` for publish targets.
 - [ ] Add `[publish].theme` config field for built-in themes.
 - [ ] Validate unknown themes with a registered diagnostic/error.
 - [ ] Record theme name in artifact manifest and JSON report.

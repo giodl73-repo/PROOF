@@ -1,4 +1,4 @@
-# mdloom Slide Layouts
+# proof Slide Layouts
 
 | layout | directive | zones | use-case |
 |--------|-----------|-------|----------|

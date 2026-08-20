@@ -5,13 +5,13 @@ slides:
   theme: minimal
 ---
 
-```mdloom:slide layout=title
+```proof:slide layout=title
 title: "Deck"
 subtitle: "Two slides"
 ```
 
 ---
 
-```mdloom:slide layout=section
+```proof:slide layout=section
 title: "Part 2"
 ```

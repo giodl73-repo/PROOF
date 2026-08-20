@@ -5,8 +5,8 @@ slides:
   theme: minimal
 ---
 
-```mdloom:slide layout=title-content title="Key Points"
-mdloom:bullets
+```proof:slide layout=title-content title="Key Points"
+proof:bullets
 - First point
   - Nested item
 - Second point

@@ -1,7 +1,7 @@
 use crate::cmd_context::GlobalOptions;
 use anyhow::Result;
-use mdloom_lib::lint::load_config_for_path;
-use mdloom_lib::MdloomConfig;
+use proof_lib::lint::load_config_for_path;
+use proof_lib::ProofConfig;
 use std::path::PathBuf;
 
 #[derive(clap::Args)]
@@ -21,12 +21,12 @@ fn run(args: Args, config_override: &Option<PathBuf>) -> Result<()> {
         load_config_for_path(&path, config_override)?
     } else {
         let probe_path = if path.is_dir() {
-            path.join("__mdloom_config_probe__.md")
+            path.join("__proof_config_probe__.md")
         } else {
             path.clone()
         };
         let root = std::env::current_dir()?;
-        MdloomConfig::resolve_for(&probe_path, &root)
+        ProofConfig::resolve_for(&probe_path, &root)
     };
     print!("{}", toml::to_string_pretty(&cfg)?);
     Ok(())

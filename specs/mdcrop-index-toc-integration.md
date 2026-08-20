@@ -1,16 +1,16 @@
-# MDCROP Index and TOC Integration for MDLOOM
+# MDCROP Index and TOC Integration for PROOF
 
 ## Goal
 
-Make MDLOOM depend on MDCROP for corpus index and TOC primitives while MDLOOM keeps
+Make PROOF depend on MDCROP for corpus index and TOC primitives while PROOF keeps
 ownership of Markdown, HTML, ASCII-art, and source-to-output compilation.
 
 ## Motivation
 
-MDLOOM already generates Markdown from `.source.md`, now also HTML, and validates
+PROOF already generates Markdown from `.source.md`, now also HTML, and validates
 links, tables, ASCII figures, directives, and source references. MDCROP has the
 right local corpus view layer: filtered roots, named views, inspection, extension
-profiles, source samples, and Markdown index generation. MDLOOM should reuse that
+profiles, source samples, and Markdown index generation. PROOF should reuse that
 library surface instead of rebuilding corpus discovery and source-table logic.
 
 ## Dependency
@@ -38,30 +38,30 @@ mdcrop-core = { git = "https://github.com/giodl73-repo/MDCROP.git", package = "m
 - `inspect_view_store(store) -> Result<MdcropViewStoreInspect, MdcropError>`
 - `IngestOptions { include_extensions, exclude_dirs }`
 
-## MDLOOM commands
+## PROOF commands
 
 Add non-destructive commands first:
 
 ```powershell
-mdloom index --root . --extension md --extension html --exclude-dir target
-mdloom index --view .mdloom\views\docs.json --output INDEX.md
-mdloom toc --root docs --extension md --output TOC.md
-mdloom inspect-views --dir .mdloom\views --strict
+proof index --root . --extension md --extension html --exclude-dir target
+proof index --view .proof\views\docs.json --output INDEX.md
+proof toc --root docs --extension md --output TOC.md
+proof inspect-views --dir .proof\views --strict
 ```
 
-`mdloom index` should render a README-style source table. `mdloom toc` can start as
+`proof index` should render a README-style source table. `proof toc` can start as
 an alias or narrower rendering of the same MDCROP `MarkdownIndex` report, then
-later grow heading-depth options. `mdloom inspect-views` should surface MDCROP view
-inspection for CI before MDLOOM compiles or publishes a large corpus.
+later grow heading-depth options. `proof inspect-views` should surface MDCROP view
+inspection for CI before PROOF compiles or publishes a large corpus.
 
-## MDLOOM directives
+## PROOF directives
 
 After the command surface lands, wire generated indexes into source compilation:
 
 ```markdown
-mdloom:index root="docs" extensions="md,html" exclude="target" title="Documentation Index"
-mdloom:toc root="docs/guides" extensions="md" depth=2
-mdloom:view-index file=".mdloom/views/docs.json"
+proof:index root="docs" extensions="md,html" exclude="target" title="Documentation Index"
+proof:toc root="docs/guides" extensions="md" depth=2
+proof:view-index file=".proof/views/docs.json"
 ```
 
 The directive renderer should call MDCROP APIs and insert Markdown tables into the
@@ -86,20 +86,20 @@ Also include:
 
 - Do not overwrite existing `README.md`, `INDEX.md`, or `TOC.md` unless the user
   passes `--output` explicitly.
-- Honor MDLOOM's existing include/exclude configuration where possible, translating
+- Honor PROOF's existing include/exclude configuration where possible, translating
   it into MDCROP `IngestOptions`.
 - Keep generated artifacts deterministic for stable diffs.
-- For HTML output, MDLOOM should render the Markdown table through its existing
+- For HTML output, PROOF should render the Markdown table through its existing
   HTML target rather than asking MDCROP to emit HTML.
-- Treat MDCROP errors as MDLOOM diagnostics with file/path context.
+- Treat MDCROP errors as PROOF diagnostics with file/path context.
 
 ## Validation
 
 ```powershell
 cargo fmt
 cargo test
-mdloom index --root . --extension md --extension html --exclude-dir target
-mdloom inspect-views --dir .mdloom\views --strict
+proof index --root . --extension md --extension html --exclude-dir target
+proof inspect-views --dir .proof\views --strict
 ```
 
 Add tests for:

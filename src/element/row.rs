@@ -6,7 +6,7 @@ use crate::element::{render_element, ElementAlign, ElementConfig, ElementData, E
 // Public types
 // ─────────────────────────────────────────────────────────
 
-/// One element slot in a mdloom:row compositor.
+/// One element slot in a proof:row compositor.
 #[derive(Debug, Clone)]
 pub struct RowElement {
     pub kind: ElementKind,
@@ -34,7 +34,7 @@ impl RowElement {
     }
 }
 
-/// Configuration for a mdloom:row compositor.
+/// Configuration for a proof:row compositor.
 #[derive(Debug, Clone)]
 pub struct RowConfig {
     pub source_uri: String,

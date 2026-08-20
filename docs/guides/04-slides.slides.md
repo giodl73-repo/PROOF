@@ -1,4 +1,4 @@
-<!-- mdloom:compiled from="mdloom:slides" count=34 -->
+<!-- proof:compiled from="proof:slides" count=34 -->
 ```slides
 SLIDE 1 ─────────────────────────────────────────────────────────────────────── 1/34
 
@@ -10,10 +10,10 @@ SLIDE 1 ────────────────────────
 
 
 
-                                  mdloom Slides
-                      ASCII presentations with mdloom:slide
+                                  proof Slides
+                      ASCII presentations with proof:slide
 
-                                  mdloom guide
+                                  proof guide
                                       2026
 
 
@@ -81,10 +81,10 @@ SLIDE 4 ────────────────────────
 
 ────────────────────────────────────────────────────────────────────────────────
 The most common layout. One title zone at the top,
-one body zone below. The body accepts any mdloom: directives.
+one body zone below. The body accepts any proof: directives.
 
 ● Clean separation between title and content
-● Body supports mdloom:bullets, mdloom:callout, mdloom:divider
+● Body supports proof:bullets, proof:callout, proof:divider
 ● Inline $\alpha$, $\beta$ math works in body text
 ● [sym:checkmark] Symbol expansion works too
 ● ```
@@ -188,7 +188,7 @@ SLIDE 8 ────────────────────────
 
                              ── Body Directives ──
 
-          mdloom:bullets · mdloom:callout · mdloom:divider · mdloom:quote
+          proof:bullets · proof:callout · proof:divider · proof:quote
 
 
 
@@ -201,7 +201,7 @@ SLIDE 8 ────────────────────────
 
 
 SLIDE 9 ─────────────────────────────────────────────────────────────────────── 9/34
-mdloom:bullets
+proof:bullets
 
 
 ────────────────────────────────────────────────────────────────────────────────
@@ -251,7 +251,7 @@ SLIDE 10 ───────────────────────�
 
 
 SLIDE 11 ────────────────────────────────────────────────────────────────────── 11/34
-mdloom:callout
+proof:callout
 
 
 ────────────────────────────────────────────────────────────────────────────────
@@ -301,7 +301,7 @@ SLIDE 12 ───────────────────────�
 
 
 SLIDE 13 ────────────────────────────────────────────────────────────────────── 13/34
-mdloom:divider and mdloom:quote
+proof:divider and proof:quote
 
 
 ────────────────────────────────────────────────────────────────────────────────
@@ -380,10 +380,10 @@ SLIDE 16 ───────────────────────�
 
 
 ────────────────────────────────────────────────────────────────────────────────
-mdloom:stat label="Tests" value="626" delta="+147"
-mdloom:stat label="Modules" value="17" delta="+1"
-mdloom:stat label="LOC" value="~8,000" delta=""
-mdloom:stat label="Coverage" value="high" delta=""
+proof:stat label="Tests" value="626" delta="+147"
+proof:stat label="Modules" value="17" delta="+1"
+proof:stat label="LOC" value="~8,000" delta=""
+proof:stat label="Coverage" value="high" delta=""
 ```
 
 
@@ -467,7 +467,7 @@ x² + y² = z² — Superscripts render as Unicode.
 
 ────────────────────────────────────────────────────────────────────────────────
 
-For multi-line math, use mdloom:math in a separate document.
+For multi-line math, use proof:math in a separate document.
 ```
 
 
@@ -507,7 +507,7 @@ SLIDE 21 ───────────────────────�
 ────────────────────────────────────────────────────────────────────────────────
 ╔═══════════════════════════════════════════╗
       ║                                           ║
-      ║   mdloom:slide layout=blank                ║
+      ║   proof:slide layout=blank                ║
       ║                                           ║
       ║   The blank layout gives you a full       ║
       ║   canvas — no chrome, no header.          ║
@@ -551,7 +551,7 @@ SLIDE 22 ───────────────────────�
 
 
 SLIDE 23 ────────────────────────────────────────────────────────────────────── 23/34
-mdloom.toml for Slides
+proof.toml for Slides
 
 
 ────────────────────────────────────────────────────────────────────────────────
@@ -580,7 +580,7 @@ SLIDE 24 ───────────────────────�
 
 
 ────────────────────────────────────────────────────────────────────────────────
-Configure slide defaults in mdloom.toml:
+Configure slide defaults in proof.toml:
 
 ● width: output width in characters (default: 120)
 ● height: output height in lines (default: 34)
@@ -589,7 +589,7 @@ Configure slide defaults in mdloom.toml:
 
 Per-slide overrides go in the fence header:
 
-```mdloom:slide layout=title width=60 height=15 theme=box
+```proof:slide layout=title width=60 height=15 theme=box
 title: "Narrow slide"
 ```
 ```
@@ -613,7 +613,7 @@ SLIDE 25 ───────────────────────�
 
                               ── New Directives ──
 
-                 mdloom:right · mdloom:ol · mdloom:toc · word-wrap
+                 proof:right · proof:ol · proof:toc · word-wrap
 
 
 
@@ -626,7 +626,7 @@ SLIDE 25 ───────────────────────�
 
 
 SLIDE 26 ────────────────────────────────────────────────────────────────────── 26/34
-mdloom:right — Right-align text
+proof:right — Right-align text
 
 
 ────────────────────────────────────────────────────────────────────────────────
@@ -676,7 +676,7 @@ Use it for dates, authors, page numbers, or visual balance.
 
 
 SLIDE 28 ────────────────────────────────────────────────────────────────────── 28/34
-mdloom:ol — Ordered (numbered) list
+proof:ol — Ordered (numbered) list
 
 
 ────────────────────────────────────────────────────────────────────────────────
@@ -707,12 +707,12 @@ SLIDE 29 ───────────────────────�
 ────────────────────────────────────────────────────────────────────────────────
 Numbered lists use decimal sub-numbering automatically.
 
-1. Install mdloom
+1. Install proof
   1.1. Clone the repo
   1.2. Run cargo build
-2. Configure mdloom.toml
+2. Configure proof.toml
   2.1. Set source_dir and output_dir
-3. Run mdloom compile
+3. Run proof compile
 4. ```
 
 
@@ -726,7 +726,7 @@ Numbered lists use decimal sub-numbering automatically.
 
 
 SLIDE 30 ────────────────────────────────────────────────────────────────────── 30/34
-mdloom:toc — Table of Contents
+proof:toc — Table of Contents
 
 
 ────────────────────────────────────────────────────────────────────────────────
@@ -851,4 +851,4 @@ SLIDE 34 ───────────────────────�
 
 
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->

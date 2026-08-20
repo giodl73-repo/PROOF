@@ -1,18 +1,18 @@
 ---
-name: mdloom-pulse
-description: "Execute one mdloom wave pulse end to end with scout, edits, documentation, and validation."
-tags: [mdloom, pulse, execute, quality, validation]
+name: proof-pulse
+description: "Execute one proof wave pulse end to end with scout, edits, documentation, and validation."
+tags: [proof, pulse, execute, quality, validation]
 ---
 
-# mdloom-pulse
+# proof-pulse
 
-Execute a pulse from the active mdloom wave.
+Execute a pulse from the active proof wave.
 
 ## Usage
 
 ```text
-/mdloom-pulse next
-/mdloom-pulse 02
+/proof-pulse next
+/proof-pulse 02
 ```
 
 ## Procedure
@@ -21,13 +21,13 @@ Execute a pulse from the active mdloom wave.
 2. If `next`, choose the first pulse with `status: todo`.
 3. Read the pulse file completely.
 4. Run every command in `Pre-implementation Scout`.
-5. Implement deliverables using existing mdloom patterns.
+5. Implement deliverables using existing proof patterns.
 6. Update docs and the pulse checklist.
 7. Update `WAVE.md` pulse table.
 8. Run validation from the pulse.
 9. Run `git diff --check`.
 
-## Default mdloom Validation
+## Default proof Validation
 
 ```powershell
 cargo test
@@ -47,7 +47,7 @@ commands and result, and carry-forwards.
 ## Rules
 
 - A "clean" claim must name the gate that made it clean.
-- ASCII/SVG quality changes must be mdloom-checked or manually inspected before
+- ASCII/SVG quality changes must be proof-checked or manually inspected before
   being called done.
 - Public behavior changes must update `README.md`, `design/SPEC.md`, or both.
 - History integration happens through wave closeout and `CHANGELOG.md`, not

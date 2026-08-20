@@ -9,7 +9,7 @@ source_request: "Rename PEBBLE and pebble.v1 to MDPORT and mdport.v1."
 
 ## Mission
 
-Rename MDLOOM's compact portable compile target and schema from PEBBLE to
+Rename PROOF's compact portable compile target and schema from PEBBLE to
 MDPORT while preserving the same source-resolution and artifact-manifest
 pipeline.
 

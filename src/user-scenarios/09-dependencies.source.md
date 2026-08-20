@@ -2,12 +2,12 @@
 
 ## Repository structure
 
-```mdloom:tree kind=dirtree root=src/user-scenarios max_depth=1
+```proof:tree kind=dirtree root=src/user-scenarios max_depth=1
 ```
 
 ## Architecture hierarchy
 
-mdloom:bullets
+proof:bullets
 - platform
   - auth-service: user-db, cache, jwt-lib
   - api-gateway: auth-service, rate-limiter, router
@@ -17,10 +17,10 @@ mdloom:bullets
 
 ## Crate dependencies
 
-mdloom:bullets
-- mdloom (CLI + lib)
-  - mdloom-canvas: unicode-width
-  - mdloom-math: unicode-width
+proof:bullets
+- proof (CLI + lib)
+  - proof-canvas: unicode-width
+  - proof-math: unicode-width
   - mdpath: thiserror
 - icelines
   - icelines-core: (no deps)

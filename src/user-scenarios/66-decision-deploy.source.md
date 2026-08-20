@@ -1,6 +1,6 @@
 # US-66 — Decision tree: deployment escalation
 
-```mdloom:tree kind=decision
+```proof:tree kind=decision
 | Node | Condition | Yes | No |
 |------|-----------|-----|-----|
 | root | Tests passing? | merge | block |

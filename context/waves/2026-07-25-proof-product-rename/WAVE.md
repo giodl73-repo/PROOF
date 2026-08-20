@@ -1,15 +1,15 @@
 ---
-wave: mdloom-product-rename
+wave: proof-product-rename
 date_open: 2026-07-25
 status: done
-source_request: "Rename the PROOF repository and tool to MDLOOM."
+source_request: "Rename the PROOF repository and tool to PROOF."
 ---
 
-# Wave: MDLOOM product rename
+# Wave: PROOF product rename
 
 ## Mission
 
-Establish MDLOOM as the clean public identity for the Markdown quality,
+Establish PROOF as the clean public identity for the Markdown quality,
 compilation, and multi-format publishing toolchain before crates.io release.
 
 ## Scope
@@ -24,7 +24,7 @@ compilation, and multi-format publishing toolchain before crates.io release.
 
 ## Trace links
 
-- Decision: MDLOOM is the public product and Cargo package name.
+- Decision: PROOF is the public product and Cargo package name.
 - Inputs: `Cargo.toml`, `README.md`, `CHANGELOG.md`, command tests, workflows,
   and package metadata.
 - Evidence: clean repository search for legacy product identifiers, Rust
@@ -36,12 +36,12 @@ compilation, and multi-format publishing toolchain before crates.io release.
 - `cargo test`
 - `cargo clippy --all-targets -- -D warnings`
 - `cargo package --allow-dirty --no-verify`
-- `mdloom --version`
+- `proof --version`
 - `git diff --check`
 
 ## Non-goals
 
 - Do not publish crates in this wave.
 - Do not change the `md://` addressing scheme.
-- Do not update unrelated child repositories before the MDLOOM child commit is
+- Do not update unrelated child repositories before the PROOF child commit is
   pushed.

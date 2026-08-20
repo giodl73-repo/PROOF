@@ -1,13 +1,13 @@
 ---
-name: mdloom-wave
-description: "Manage mdloom waves in context/waves: find active architecture/quality work, show status, advance pulses, and close waves."
-tags: [mdloom, wave, quality, architecture, execution, planning]
+name: proof-wave
+description: "Manage proof waves in context/waves: find active architecture/quality work, show status, advance pulses, and close waves."
+tags: [proof, wave, quality, architecture, execution, planning]
 ---
 
-# mdloom-wave
+# proof-wave
 
 Use this skill when the user asks for a wave, quality rail, architecture review,
-roadmap, milestone execution, or to continue from the active mdloom wave.
+roadmap, milestone execution, or to continue from the active proof wave.
 
 ## Source Of Truth
 
@@ -33,7 +33,7 @@ roadmap, milestone execution, or to continue from the active mdloom wave.
 1. Resolve the next `todo` pulse unless the user names a pulse.
 2. Read the pulse file completely.
 3. Run the pulse's pre-implementation scout commands.
-4. Implement the deliverables using existing mdloom conventions.
+4. Implement the deliverables using existing proof conventions.
 5. Update documentation and pulse checkboxes.
 6. Update `WAVE.md` pulse status.
 7. Run validation commands from the pulse.

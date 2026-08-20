@@ -8,17 +8,17 @@ document, the way a real authoring workflow would.
 The bias-variance tradeoff governs the relationship between model capacity
 and generalization. The expected error decomposes:
 
-<!-- mdloom:compiled from="mdloom:math" -->
+<!-- proof:compiled from="proof:math" -->
 ```
 Error = Bias² + Variance + σ²
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
 ## Empirical results
 
 Validation loss across our four candidate models:
 
-<!-- mdloom:compiled from="mdloom:chart" -->
+<!-- proof:compiled from="proof:chart" -->
 ```
 LSTM-baseline  │                                  0
 GRU-v2         │ ███████                       1.30
@@ -26,11 +26,11 @@ Transformer-S  │ █████████████████          
 Transformer-L  │ █████████████████████████████ 5.10
 Hybrid-CNN     │ ███████████████               2.70
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
 ## Tradeoff hierarchy
 
-<!-- mdloom:compiled from="mdloom:tree kind=taxonomy" uri="" -->
+<!-- proof:compiled from="proof:tree kind=taxonomy" uri="" -->
 ```taxonomy
 Tradeoffs
 ├── Capacity
@@ -44,11 +44,11 @@ Tradeoffs
     ├── Cross-validation
     └── Held-out test set
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
 ## Models in scope
 
-<!-- mdloom:compiled from="md://src/user-scenarios/data/models.md#:table:0" -->
+<!-- proof:compiled from="md://src/user-scenarios/data/models.md#:table:0" -->
 ```
 model | accuracy | delta | val_loss | status
 ------- | ---------- | ------- | ---------- | --------
@@ -58,10 +58,10 @@ Transformer-S | 92.1% | +3.0 | 3,2,2,2,1,1,1 | good
 Transformer-L | 94.2% | +5.1 | 3,3,2,2,1,1,1 | best
 Hybrid-CNN | 91.8% | +2.7 | 3,2,2,2,1,1,1 | good
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
 ## See also
 
-<!-- mdloom:compiled from="mdloom:xref" -->
+<!-- proof:compiled from="proof:xref" -->
 *See: [01 math](docs/guides/01-math.md)*
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->

@@ -3,10 +3,10 @@
 Multiple lint signals in one file:
 
 - `[sym:checkmrk]` typo → SYMBOL-001 with did-you-mean
-- mdloom:include pin reference that doesn't match a `[[davinci]]` entry
+- proof:include pin reference that doesn't match a `[[davinci]]` entry
 
 Status: [sym:checkmrk] all green.
 
-```mdloom:include pin=nonexistent-pin
+```proof:include pin=nonexistent-pin
 md://src/data/features.md#:table:0
 ```

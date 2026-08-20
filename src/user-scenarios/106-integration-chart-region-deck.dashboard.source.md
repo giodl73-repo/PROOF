@@ -9,26 +9,26 @@ dashboard:
     trend: { x: 0, y: 9, width: 80, height: 7 }
 ---
 
-```mdloom:region name=title
-MDLOOM release-health dashboard
+```proof:region name=title
+PROOF release-health dashboard
 ```
 
-```mdloom:region name=metric_a
+```proof:region name=metric_a
 Tests passing:
-mdloom:element kind=value value="793" width=10 no-chrome
+proof:element kind=value value="793" width=10 no-chrome
 Build warnings:
-mdloom:element kind=value value="0" width=10 no-chrome
+proof:element kind=value value="0" width=10 no-chrome
 ```
 
-```mdloom:region name=metric_b
+```proof:region name=metric_b
 Chart kinds:
-mdloom:element kind=value value="10" width=10 no-chrome
+proof:element kind=value value="10" width=10 no-chrome
 Slide layouts:
-mdloom:element kind=value value="8" width=10 no-chrome
+proof:element kind=value value="8" width=10 no-chrome
 ```
 
-```mdloom:region name=trend
-mdloom:chart kind=bar width=70 no-chrome
+```proof:region name=trend
+proof:chart kind=bar width=70 no-chrome
 v0.5: 540
 v0.6: 711
 v0.7: 793

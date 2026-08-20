@@ -1,6 +1,6 @@
-# mdloom Trees — ASCII Tree Diagrams
+# proof Trees — ASCII Tree Diagrams
 
-`mdloom:tree` generates ASCII tree diagrams from either inline content or an
+`proof:tree` generates ASCII tree diagrams from either inline content or an
 external data table. Trees are the right tool when hierarchy is the point —
 org charts, taxonomy classifications, dependency graphs, numbered outlines,
 and filesystem structure all have a clearer shape as a tree than as a table.
@@ -23,12 +23,12 @@ provide orientation in a complex monorepo.
 patterns to skip — commonly used to hide `target/`, `node_modules/`, and
 build artifacts.
 
-```mdloom:tree kind=dirtree root=src max_depth=2
+```proof:tree kind=dirtree root=src max_depth=2
 ```
 
 With exclusions:
 
-```mdloom:tree kind=dirtree root=src max_depth=3 exclude=target,*.lock
+```proof:tree kind=dirtree root=src max_depth=3 exclude=target,*.lock
 ```
 
 ---
@@ -44,28 +44,28 @@ The inline format is convenient for static hierarchies. For hierarchies derived
 from data (e.g., an org chart from a people table), use `source=md://...` with
 `name=` and `parent=` column names.
 
-```mdloom:tree kind=org
-root: mdloom CLI
-- mdloom check: Lint markdown and ASCII art
+```proof:tree kind=org
+root: proof CLI
+- proof check: Lint markdown and ASCII art
   - AsciiBoxCheck: Box border alignment
   - AsciiFlowCheck: Flow diagram nodes
   - MarkdownCheck: Headings and links
   - MarkdownTableCheck: Column alignment
-- mdloom compile: Resolve directives
-  - mdloom:math: LaTeX → Unicode/ASCII art
-  - mdloom:symbol: Named glyphs
-  - mdloom:element: Numeric cells
-  - mdloom:row: Data rows
-  - mdloom:tree: Tree diagrams
-  - mdloom:slide: Presentations
-  - mdloom:region: Dashboard canvas
-- mdloom fix: Auto-patch errors
-- mdloom pin: Register figure invariants
+- proof compile: Resolve directives
+  - proof:math: LaTeX → Unicode/ASCII art
+  - proof:symbol: Named glyphs
+  - proof:element: Numeric cells
+  - proof:row: Data rows
+  - proof:tree: Tree diagrams
+  - proof:slide: Presentations
+  - proof:region: Dashboard canvas
+- proof fix: Auto-patch errors
+- proof pin: Register figure invariants
 ```
 
 From a data table (parent/child columns):
 
-```mdloom:tree kind=org source=md://src/data/features.md name=name parent=category
+```proof:tree kind=org source=md://src/data/features.md name=name parent=category
 ```
 
 ---
@@ -77,7 +77,7 @@ nodes at the same level represent peers within a category. The difference is
 visual: taxonomy renders with clear category-level breaks. Use it for
 knowledge organization, feature matrices, or content classification.
 
-```mdloom:tree kind=taxonomy
+```proof:tree kind=taxonomy
 root: Math rendering
 - Tier 1: Unicode substitution
   - Greek letters
@@ -108,7 +108,7 @@ Use it to document what a module, package, or system relies on. The visual
 shape makes it immediately clear which components are shared (appear multiple
 times) and which are leaf dependencies.
 
-```mdloom:tree kind=dependency
+```proof:tree kind=dependency
 root: compile output
 - math module: tokenizer, symbols, superscript, tier2, fraction, integral, matrix, render
 - symbol module: library, shape, mod
@@ -126,12 +126,12 @@ root: compile output
 structure, table of contents drafts, or project plans where numbering conveys
 sequence and hierarchy together.
 
-```mdloom:tree kind=outline
+```proof:tree kind=outline
 1. Installation
    1.1 From source
    1.2 From crates.io
 2. Configuration
-   2.1 mdloom.toml basics
+   2.1 proof.toml basics
    2.2 Section schemas
    2.3 Compile settings
 3. Linting
@@ -150,23 +150,23 @@ sequence and hierarchy together.
 
 When your hierarchy lives in a data table, use `source=md://path/to/table.md`
 with `name=` and `parent=` to identify which columns drive the structure.
-mdloom synthesizes parent nodes automatically when they appear as parent values
+proof synthesizes parent nodes automatically when they appear as parent values
 but aren't themselves rows in the table — so a flat table with a `category`
 column works without needing explicit category rows.
 
-```mdloom:tree kind=taxonomy source=md://src/data/diagnostic-codes.md name=code parent=module
+```proof:tree kind=taxonomy source=md://src/data/diagnostic-codes.md name=code parent=module
 ```
 
 ---
 
 ## Validation
 
-Trees are validated as they compile. mdloom checks that the tree has exactly
+Trees are validated as they compile. proof checks that the tree has exactly
 one root, that indentation is consistent, and that there are no circular
-references. Run `mdloom tree validate` to check an existing rendered tree:
+references. Run `proof tree validate` to check an existing rendered tree:
 
 ```bash
-mdloom tree validate docs/guides/trees.md
+proof tree validate docs/guides/trees.md
 ```
 
 ---

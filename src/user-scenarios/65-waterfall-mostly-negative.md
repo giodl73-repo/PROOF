@@ -3,7 +3,7 @@
 Stress test: a waterfall where the deltas drag the running total well below
 the starting baseline. The min y-axis bound auto-extends below zero.
 
-<!-- mdloom:compiled from="mdloom:chart" -->
+<!-- proof:compiled from="proof:chart" -->
 ```
                          Cash burn
 Open balance  │   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 1000
@@ -13,7 +13,7 @@ Marketing     │     ▒▒▒▒▒▒▒▒▒▒▒▒                      
 Support       │ ▒▒▒▒▒                                     -50
 Closing       │ ▓                                         -50
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->
 
-The Closing total = -50 — mdloom should render the closing bar below zero
+The Closing total = -50 — proof should render the closing bar below zero
 without truncation.

@@ -1,27 +1,27 @@
-# mdloom Codebase Architecture
+# proof Codebase Architecture
 
 ## Repository structure
 
-```mdloom:tree kind=dirtree root=src max_depth=2 exclude=target
+```proof:tree kind=dirtree root=src max_depth=2 exclude=target
 ```
 
 ## Team organization
 
-mdloom:bullets
+proof:bullets
 - Core: compile pipeline, lint checks, fix system
-  - mdloom-math: LaTeX renderer crate
-  - mdloom-canvas: char grid crate
+  - proof-math: LaTeX renderer crate
+  - proof-canvas: char grid crate
 - Integrations: mdpath URI scheme and resolver
 - Documentation: guides, scenarios, spec clarifications
 
 ## Module dependency graph
 
-mdloom:bullets
-- mdloom binary
+proof:bullets
+- proof binary
   - compile.rs: math, symbol, element, slide, dashboard, tree, layout
   - runner.rs: checks, config
   - checks: ascii_box, ascii_flow, ascii_tree, markdown, markdown_table, source_links
-  - dashboard: canvas (mdloom-canvas), region
+  - dashboard: canvas (proof-canvas), region
   - slide: parser, canvas, layout, bullets, inline
   - element: value, delta, sparkline, mini_bar, row
   - symbol: library, shape

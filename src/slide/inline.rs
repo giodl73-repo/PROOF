@@ -2,7 +2,7 @@
 use crate::slide::layout::{center_in_width, fit_to_width};
 
 // ─────────────────────────────────────────────────────────
-// mdloom:quote
+// proof:quote
 // ─────────────────────────────────────────────────────────
 
 /// Render a centered block quote with optional attribution.
@@ -19,7 +19,7 @@ pub fn render_quote(text: &str, attribution: Option<&str>, width: usize) -> Vec<
 }
 
 // ─────────────────────────────────────────────────────────
-// mdloom:centered
+// proof:centered
 // ─────────────────────────────────────────────────────────
 
 /// Center each line of text within `width`.
@@ -28,7 +28,7 @@ pub fn render_centered(text: &str, width: usize) -> Vec<String> {
 }
 
 // ─────────────────────────────────────────────────────────
-// mdloom:stat
+// proof:stat
 // ─────────────────────────────────────────────────────────
 
 /// Render a single statistic: large value + label + optional sublabel, centered.
@@ -47,7 +47,7 @@ pub fn render_stat(value: &str, label: &str, sublabel: Option<&str>, width: usiz
 }
 
 // ─────────────────────────────────────────────────────────
-// mdloom:callout
+// proof:callout
 // ─────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -97,7 +97,7 @@ pub fn render_callout(text: &str, style: CalloutStyle, width: usize) -> Vec<Stri
 }
 
 // ─────────────────────────────────────────────────────────
-// mdloom:divider
+// proof:divider
 // ─────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -122,7 +122,7 @@ impl DividerStyle {
 }
 
 // ─────────────────────────────────────────────────────────
-// mdloom:right
+// proof:right
 // ─────────────────────────────────────────────────────────
 
 /// Right-align each line of text within `width` — complement to render_centered.
@@ -139,12 +139,12 @@ pub fn render_right(text: &str, width: usize) -> Vec<String> {
 }
 
 // ─────────────────────────────────────────────────────────
-// mdloom:numbered-list  (alias: mdloom:ol — ordered / numbered list)
+// proof:numbered-list  (alias: proof:ol — ordered / numbered list)
 // ─────────────────────────────────────────────────────────
 
 /// Render a numbered (ordered) list.
 ///
-/// Dispatched from both `mdloom:numbered-list` (primary) and `mdloom:ol`
+/// Dispatched from both `proof:numbered-list` (primary) and `proof:ol`
 /// (short-form alias) — both names render identically.
 ///
 /// Input lines starting with `- ` are items; indented items (2+ spaces) are
@@ -341,7 +341,7 @@ mod tests {
         assert_eq!(DividerStyle::parse("wave"), DividerStyle::Approx);
     }
 
-    // ── mdloom:right ──────────────────────────────────────
+    // ── proof:right ──────────────────────────────────────
 
     #[test]
     fn right_align_short_line() {
@@ -369,7 +369,7 @@ mod tests {
         assert_eq!(lines[2], "  ccc");
     }
 
-    // ── mdloom:ol ─────────────────────────────────────────
+    // ── proof:ol ─────────────────────────────────────────
 
     #[test]
     fn ol_basic_numbered_list() {

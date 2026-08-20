@@ -7,7 +7,7 @@ source_request: "Rename CROP to MDCROP."
 
 # Wave: MDCROP adoption
 
-MDLOOM now delegates corpus indexing, catalogs, status, views, and side-info to
+PROOF now delegates corpus indexing, catalogs, status, views, and side-info to
 MDCROP through the `mdcrop` binary and `mdcrop.view.v1` contracts.
 
 Validation:

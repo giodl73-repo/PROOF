@@ -1,7 +1,7 @@
-<!-- mdloom:compiled from="mdloom:dashboard" -->
+<!-- proof:compiled from="proof:dashboard" -->
 ```dashboard
 Status: [sym:checkmark] all green
-mdloom:symbol checkmark size=2
+proof:symbol checkmark size=2
  ╭─────╮
  │ MVP │
  ╰─────╯
@@ -9,4 +9,4 @@ mdloom:symbol checkmark size=2
 
 
 ```
-<!-- /mdloom:compiled -->
+<!-- /proof:compiled -->

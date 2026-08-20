@@ -3,14 +3,14 @@
 /// L0 = unit (in-module #[cfg(test)])
 /// L1 = integration (this file — fixture files, check composition, error codes)
 /// L2 = E2E (CLI invocation, exit codes, output formats)
-use mdloom_lib::checks::ascii_box::AsciiBoxCheck;
-use mdloom_lib::checks::ascii_flow::AsciiFlowCheck;
-use mdloom_lib::checks::markdown::MarkdownCheck;
-use mdloom_lib::checks::markdown_table::MarkdownTableCheck;
-use mdloom_lib::checks::Check;
-use mdloom_lib::config::{AsciiBoxConfig, AsciiFlowConfig, MarkdownConfig, MdloomConfig};
-use mdloom_lib::diagnostic::Severity;
-use mdloom_lib::Runner;
+use proof_lib::checks::ascii_box::AsciiBoxCheck;
+use proof_lib::checks::ascii_flow::AsciiFlowCheck;
+use proof_lib::checks::markdown::MarkdownCheck;
+use proof_lib::checks::markdown_table::MarkdownTableCheck;
+use proof_lib::checks::Check;
+use proof_lib::config::{AsciiBoxConfig, AsciiFlowConfig, MarkdownConfig, ProofConfig};
+use proof_lib::diagnostic::Severity;
+use proof_lib::Runner;
 use std::path::{Path, PathBuf};
 
 fn fixture(name: &str) -> PathBuf {
@@ -375,10 +375,10 @@ fn markdown_required_pattern_missing() {
     let check = MarkdownCheck {
         config: MarkdownConfig {
             enabled: true,
-            required_patterns: vec![mdloom_lib::config::RequiredPattern {
+            required_patterns: vec![proof_lib::config::RequiredPattern {
                 pattern: "```".to_string(),
                 description: "must have code block".to_string(),
-                severity: mdloom_lib::config::PatternSeverity::Warning,
+                severity: proof_lib::config::PatternSeverity::Warning,
             }],
             ..Default::default()
         },
@@ -415,9 +415,9 @@ fn markdown_max_lines_exceeded() {
 
 #[test]
 fn default_config_loads_without_panic() {
-    let cfg = mdloom_lib::MdloomConfig::load_or_default(Path::new("."));
+    let cfg = proof_lib::ProofConfig::load_or_default(Path::new("."));
     assert!(cfg.ascii_box.enabled);
-    // tolerance is configured in the root mdloom.toml — just check it loaded
+    // tolerance is configured in the root proof.toml — just check it loaded
     assert!(
         cfg.ascii_box.tolerance <= 2,
         "tolerance should be a small number"
@@ -428,7 +428,7 @@ fn default_config_loads_without_panic() {
 fn schema_file_loads_correctly() {
     let schema_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("schemas/default.toml");
     if schema_path.exists() {
-        let cfg = mdloom_lib::MdloomConfig::load(&schema_path)
+        let cfg = proof_lib::ProofConfig::load(&schema_path)
             .expect("default schema should parse without error");
         assert!(cfg.ascii_box.enabled);
     }
@@ -440,9 +440,9 @@ fn schema_file_loads_correctly() {
 
 #[test]
 fn runner_scans_fixture_dir() {
-    use mdloom_lib::Runner;
+    use proof_lib::Runner;
     let fixture_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
-    let cfg = mdloom_lib::MdloomConfig::default();
+    let cfg = proof_lib::ProofConfig::default();
     let runner = Runner::new(&fixture_dir, cfg).expect("runner should build");
     let diags = runner.run();
     assert!(
@@ -453,9 +453,9 @@ fn runner_scans_fixture_dir() {
 
 #[test]
 fn runner_lint_single_perfect_file() {
-    use mdloom_lib::Runner;
+    use proof_lib::Runner;
     let path = fixture("perfect_box.md");
-    let cfg = mdloom_lib::MdloomConfig::default();
+    let cfg = proof_lib::ProofConfig::default();
     let runner = Runner::new(path.parent().unwrap(), cfg).expect("runner should build");
     let diags = runner.lint_file(&path);
     assert!(
@@ -516,7 +516,7 @@ fn sibling_mdcrop_fixture_root(mdcrop_manifest: &Path) -> PathBuf {
         .parent()
         .unwrap()
         .join("examples")
-        .join("mdloom-fixture")
+        .join("proof-fixture")
 }
 
 fn write_real_mdcrop_bin(dir: &Path, mdcrop_manifest: &Path) -> PathBuf {
@@ -553,14 +553,14 @@ fn write_real_mdcrop_bin(dir: &Path, mdcrop_manifest: &Path) -> PathBuf {
 
 #[test]
 fn binary_exits_zero_on_clean_file() {
-    let bin = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/debug/mdloom");
+    let bin = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/debug/proof");
     if !bin.exists() {
         return; // skip if not built yet
     }
     let output = std::process::Command::new(&bin)
         .arg(fixture("perfect_box.md").to_str().unwrap())
         .output()
-        .expect("failed to run mdloom");
+        .expect("failed to run proof");
     assert_eq!(
         output.status.code(),
         Some(0),
@@ -571,14 +571,14 @@ fn binary_exits_zero_on_clean_file() {
 
 #[test]
 fn binary_exits_nonzero_on_errors() {
-    let bin = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/debug/mdloom");
+    let bin = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/debug/proof");
     if !bin.exists() {
         return;
     }
     let output = std::process::Command::new(&bin)
         .arg(fixture("width_mismatch.md").to_str().unwrap())
         .output()
-        .expect("failed to run mdloom");
+        .expect("failed to run proof");
     assert_ne!(
         output.status.code(),
         Some(0),
@@ -588,7 +588,7 @@ fn binary_exits_nonzero_on_errors() {
 
 #[test]
 fn binary_json_output_is_parseable() {
-    let bin = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/debug/mdloom");
+    let bin = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/debug/proof");
     if !bin.exists() {
         return;
     }
@@ -596,7 +596,7 @@ fn binary_json_output_is_parseable() {
         .args(["--format", "json", "--no-fail"])
         .arg(fixture("width_mismatch.md").to_str().unwrap())
         .output()
-        .expect("failed to run mdloom");
+        .expect("failed to run proof");
     let stdout = String::from_utf8_lossy(&output.stdout);
     // Should be a JSON array
     assert!(
@@ -815,8 +815,8 @@ fn rich_context_surrounding_lines_include_failing_line() {
 #[test]
 fn invariant_i3_all_diagnostics_have_valid_spans() {
     let fixture_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
-    use mdloom_lib::Runner;
-    let runner = Runner::new(&fixture_dir, mdloom_lib::MdloomConfig::default()).unwrap();
+    use proof_lib::Runner;
+    let runner = Runner::new(&fixture_dir, proof_lib::ProofConfig::default()).unwrap();
     let diags = runner.run();
     for d in &diags {
         assert!(
@@ -898,10 +898,10 @@ fn invariant_i6_tolerance_bounds() {
 // I-7: Parallel and sequential execution produce same diagnostic SET
 #[test]
 fn invariant_i7_parallel_equals_sequential() {
-    use mdloom_lib::Runner;
+    use proof_lib::Runner;
     let fixture_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
-    let cfg1 = mdloom_lib::MdloomConfig::default();
-    let cfg2 = mdloom_lib::MdloomConfig::default();
+    let cfg1 = proof_lib::ProofConfig::default();
+    let cfg2 = proof_lib::ProofConfig::default();
 
     // Parallel (runner uses rayon internally)
     let runner = Runner::new(&fixture_dir, cfg1).unwrap();
@@ -909,7 +909,7 @@ fn invariant_i7_parallel_equals_sequential() {
 
     // Sequential (lint each file one-by-one)
     let runner2 = Runner::new(&fixture_dir, cfg2).unwrap();
-    let mut sequential: Vec<mdloom_lib::Diagnostic> = walkdir::WalkDir::new(&fixture_dir)
+    let mut sequential: Vec<proof_lib::Diagnostic> = walkdir::WalkDir::new(&fixture_dir)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.file_type().is_file())
@@ -917,7 +917,7 @@ fn invariant_i7_parallel_equals_sequential() {
         .collect();
 
     // Sort both to make comparison order-independent
-    let key = |d: &mdloom_lib::Diagnostic| (d.file.clone(), d.span.line, d.span.col, d.code);
+    let key = |d: &proof_lib::Diagnostic| (d.file.clone(), d.span.line, d.span.col, d.code);
     parallel.sort_by_key(key);
     sequential.sort_by_key(key);
 
@@ -938,7 +938,7 @@ fn invariant_i7_parallel_equals_sequential() {
 
 #[test]
 fn invariant_all_source_diagnostic_codes_are_registered() {
-    use mdloom_lib::lookup_diagnostic_code;
+    use proof_lib::lookup_diagnostic_code;
     use std::collections::BTreeSet;
 
     let src_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
@@ -1031,7 +1031,7 @@ fn prefixed_number_code(value: &str) -> bool {
 
 #[test]
 fn fix_plan_round_trip_json() {
-    use mdloom_lib::fix::{Confidence, DiagnosticRef, Edit, Fix, FixPlan, PlanSummary};
+    use proof_lib::fix::{Confidence, DiagnosticRef, Edit, Fix, FixPlan, PlanSummary};
     use std::path::PathBuf;
 
     let plan = FixPlan {
@@ -1071,7 +1071,7 @@ fn fix_plan_round_trip_json() {
 
 #[test]
 fn fix_plan_confidence_filtering() {
-    use mdloom_lib::fix::{Confidence, DiagnosticRef, Edit, Fix, FixOptions, FixPlan, PlanSummary};
+    use proof_lib::fix::{Confidence, DiagnosticRef, Edit, Fix, FixOptions, FixPlan, PlanSummary};
     let dir = tempfile::tempdir().unwrap();
     let file = dir.path().join("test.md");
     std::fs::write(&file, "hello\n").unwrap();
@@ -1142,7 +1142,7 @@ fn debug_bin() -> PathBuf {
     // Try workspace target first (set up after cargo workspace was added)
     let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
     let workspace = manifest.parent().unwrap_or(manifest);
-    let bin_name = format!("mdloom{}", std::env::consts::EXE_SUFFIX);
+    let bin_name = format!("proof{}", std::env::consts::EXE_SUFFIX);
     let workspace_bin = workspace.join("target/debug").join(&bin_name);
     if workspace_bin.exists() {
         return workspace_bin;
@@ -1162,7 +1162,7 @@ fn binary_rich_output_contains_context_block() {
         .args(["--format", "rich", "--no-fail"])
         .arg(fixture("width_mismatch.md").to_str().unwrap())
         .output()
-        .expect("failed to run mdloom");
+        .expect("failed to run proof");
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -1199,7 +1199,7 @@ fn binary_rich_output_is_valid_json_array() {
         .args(["--format", "rich", "--no-fail"])
         .arg(fixture("perfect_box.md").to_str().unwrap())
         .output()
-        .expect("failed to run mdloom");
+        .expect("failed to run proof");
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     let parsed: serde_json::Value = serde_json::from_str(&stdout)
@@ -1224,7 +1224,7 @@ fn binary_stats_command_runs() {
         .args(["stats", "--by-code"])
         .arg(fixture("width_mismatch.md").to_str().unwrap())
         .output()
-        .expect("failed to run mdloom stats");
+        .expect("failed to run proof stats");
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("files:"), "stats should show file count");
@@ -1249,11 +1249,11 @@ fn binary_stats_by_tag_reports_source_frontmatter() {
         .args(["stats", "--by-tag"])
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom stats --by-tag");
+        .expect("failed to run proof stats --by-tag");
 
     assert!(
         output.status.success(),
-        "mdloom stats --by-tag failed:\n{}",
+        "proof stats --by-tag failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -1287,11 +1287,11 @@ fn binary_stats_tag_filter_limits_files() {
         .args(["stats", "--by-tag", "--tag", "publish"])
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom stats --tag");
+        .expect("failed to run proof stats --tag");
 
     assert!(
         output.status.success(),
-        "mdloom stats --tag failed:\n{}",
+        "proof stats --tag failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -1313,7 +1313,7 @@ fn binary_stats_file_count_honors_include_exclude() {
     std::fs::write(dir.path().join("docs").join("one.md"), "# One\n").unwrap();
     std::fs::write(dir.path().join("drafts").join("skip.md"), "# Skip\n").unwrap();
     std::fs::write(dir.path().join("root.md"), "# Root\n").unwrap();
-    let config_path = dir.path().join("mdloom.toml");
+    let config_path = dir.path().join("proof.toml");
     std::fs::write(
         &config_path,
         r#"
@@ -1329,11 +1329,11 @@ exclude = ["drafts/**"]
         .arg(&config_path)
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom stats");
+        .expect("failed to run proof stats");
 
     assert!(
         output.status.success(),
-        "mdloom stats failed:\n{}",
+        "proof stats failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -1359,11 +1359,11 @@ fn binary_draft_command_writes_plan() {
         .arg(&output_path)
         .arg(fixture("width_mismatch.md"))
         .output()
-        .expect("failed to run mdloom draft");
+        .expect("failed to run proof draft");
 
     assert!(
         output.status.success(),
-        "mdloom draft failed:\n{}",
+        "proof draft failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let plan = std::fs::read_to_string(&output_path).expect("draft plan should be written");
@@ -1382,22 +1382,22 @@ fn binary_status_command_reports_project_summary() {
     }
 
     let dir = tempfile::tempdir().unwrap();
-    std::fs::write(dir.path().join("mdloom.toml"), "[files]\nroot = true\n").unwrap();
+    std::fs::write(dir.path().join("proof.toml"), "[files]\nroot = true\n").unwrap();
     std::fs::write(dir.path().join("guide.source.md"), "# Guide\n").unwrap();
 
     let output = std::process::Command::new(&bin)
         .args(["status"])
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom status");
+        .expect("failed to run proof status");
 
     assert!(
         output.status.success(),
-        "mdloom status failed:\n{}",
+        "proof status failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("mdloom status"), "got:\n{}", stdout);
+    assert!(stdout.contains("proof status"), "got:\n{}", stdout);
     assert!(stdout.contains("Sources"), "got:\n{}", stdout);
     assert!(stdout.contains("Config"), "got:\n{}", stdout);
 }
@@ -1411,7 +1411,7 @@ fn binary_status_command_honors_explicit_config() {
 
     let dir = tempfile::tempdir().unwrap();
     let config_dir = tempfile::tempdir().unwrap();
-    let config_path = config_dir.path().join("mdloom.toml");
+    let config_path = config_dir.path().join("proof.toml");
     std::fs::write(dir.path().join("guide.source.md"), "# Guide\n").unwrap();
     std::fs::write(
         &config_path,
@@ -1432,11 +1432,11 @@ required_h2_all = ["Decision"]
         .arg("status")
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom status");
+        .expect("failed to run proof status");
 
     assert!(
         output.status.success(),
-        "mdloom status failed:\n{}",
+        "proof status failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -1474,11 +1474,11 @@ fn binary_status_mdcrop_delegates_to_mdcrop_status() {
         .arg("--strict-on")
         .arg("broken-links")
         .output()
-        .expect("failed to run mdloom status --mdcrop");
+        .expect("failed to run proof status --mdcrop");
 
     assert!(
         output.status.success(),
-        "mdloom status --mdcrop failed:\n{}",
+        "proof status --mdcrop failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -1520,7 +1520,7 @@ fn binary_status_mdcrop_rejects_local_text_format() {
         .arg("--mdcrop-format")
         .arg("text")
         .output()
-        .expect("failed to run mdloom status --mdcrop");
+        .expect("failed to run proof status --mdcrop");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -1552,7 +1552,7 @@ fn binary_status_mdcrop_rejects_unknown_strict_policy() {
         .arg("--strict-on")
         .arg("stale-artifacts")
         .output()
-        .expect("failed to run mdloom status --mdcrop");
+        .expect("failed to run proof status --mdcrop");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -1583,7 +1583,7 @@ fn binary_status_mdcrop_rejects_dir_with_view() {
         .arg("--view")
         .arg(".mdcrop\\views\\ready.json")
         .output()
-        .expect("failed to run mdloom status --mdcrop");
+        .expect("failed to run proof status --mdcrop");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -1621,11 +1621,11 @@ fn binary_backfill_literal_generates_source_and_report() {
         .arg("--literal-first")
         .arg("--check-roundtrip")
         .output()
-        .expect("failed to run mdloom backfill");
+        .expect("failed to run proof backfill");
 
     assert!(
         output.status.success(),
-        "mdloom backfill failed:\n{}",
+        "proof backfill failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -1637,7 +1637,7 @@ fn binary_backfill_literal_generates_source_and_report() {
         generated_text
     );
     assert!(
-        generated_text.contains("mdloom_original: \"guide.md\""),
+        generated_text.contains("proof_original: \"guide.md\""),
         "got:\n{}",
         generated_text
     );
@@ -1682,11 +1682,11 @@ fn binary_backfill_literal_roundtrips_frontmatter_with_crlf() {
         .arg("--literal-first")
         .arg("--check-roundtrip")
         .output()
-        .expect("failed to run mdloom backfill");
+        .expect("failed to run proof backfill");
 
     assert!(
         output.status.success(),
-        "mdloom backfill failed:\n{}",
+        "proof backfill failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -1729,11 +1729,11 @@ fn binary_backfill_report_classifies_candidate_blocks() {
         .arg(&report_path)
         .arg("--literal-first")
         .output()
-        .expect("failed to run mdloom backfill");
+        .expect("failed to run proof backfill");
 
     assert!(
         output.status.success(),
-        "mdloom backfill failed:\n{}",
+        "proof backfill failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -1780,11 +1780,11 @@ fn binary_backfill_extract_tables_writes_sidecar_data() {
         .arg("--literal-first")
         .arg("--extract-tables")
         .output()
-        .expect("failed to run mdloom backfill");
+        .expect("failed to run proof backfill");
 
     assert!(
         output.status.success(),
-        "mdloom backfill failed:\n{}",
+        "proof backfill failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -1839,11 +1839,11 @@ fn binary_backfill_extract_tables_writes_structured_block_sidecar() {
         .arg("--literal-first")
         .arg("--extract-tables")
         .output()
-        .expect("failed to run mdloom backfill");
+        .expect("failed to run proof backfill");
 
     assert!(
         output.status.success(),
-        "mdloom backfill failed:\n{}",
+        "proof backfill failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -1892,11 +1892,11 @@ fn binary_compile_target_html_writes_html_document() {
         .arg("-o")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom compile");
+        .expect("failed to run proof compile");
 
     assert!(
         output.status.success(),
-        "mdloom compile failed:\n{}",
+        "proof compile failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -1941,11 +1941,11 @@ fn binary_compile_target_mdport_writes_ai_context_pack() {
         .arg("-o")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom compile");
+        .expect("failed to run proof compile");
 
     assert!(
         output.status.success(),
-        "mdloom compile failed:\n{}",
+        "proof compile failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -1962,7 +1962,7 @@ fn binary_compile_target_mdport_writes_ai_context_pack() {
         .unwrap()
         .contains("- one"));
 
-    let manifest_path = dir.path().join(".mdloom").join("artifacts.json");
+    let manifest_path = dir.path().join(".proof").join("artifacts.json");
     let manifest: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&manifest_path).unwrap()).unwrap();
     assert_eq!(manifest["artifacts"][0]["target"], "mdport");
@@ -1977,7 +1977,7 @@ fn binary_compile_target_json_report_writes_bundle() {
 
     let dir = tempfile::tempdir().unwrap();
     let source = dir.path().join("guide.source.md");
-    let output_path = dir.path().join("guide.mdloom-report.json");
+    let output_path = dir.path().join("guide.proof-report.json");
     std::fs::write(
         &source,
         "---\ntags: [publish]\ncontent_tags: [guide]\n---\n# Guide\n\nIntro text.\n\n## Steps\n\n- one\n- two\n",
@@ -1994,17 +1994,17 @@ fn binary_compile_target_json_report_writes_bundle() {
         .arg("-o")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom compile");
+        .expect("failed to run proof compile");
 
     assert!(
         output.status.success(),
-        "mdloom compile failed:\n{}",
+        "proof compile failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
     let report: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&output_path).unwrap()).unwrap();
-    assert_eq!(report["schema"], "mdloom.publish.json_report.v1");
+    assert_eq!(report["schema"], "proof.publish.json_report.v1");
     assert_eq!(report["kind"], "compile_report");
     assert_eq!(
         report["source_path"].as_str().unwrap(),
@@ -2026,7 +2026,7 @@ fn binary_compile_target_json_report_writes_bundle() {
         .contains("Intro text."));
     assert_eq!(report["compile"]["diagnostics_count"], 0);
 
-    let manifest_path = dir.path().join(".mdloom").join("artifacts.json");
+    let manifest_path = dir.path().join(".proof").join("artifacts.json");
     let manifest: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&manifest_path).unwrap()).unwrap();
     assert_eq!(manifest["artifacts"][0]["target"], "json-report");
@@ -2064,11 +2064,11 @@ fn binary_compile_target_site_writes_static_site() {
         .arg("--output-dir")
         .arg(&site_dir)
         .output()
-        .expect("failed to run mdloom compile");
+        .expect("failed to run proof compile");
 
     assert!(
         output.status.success(),
-        "mdloom compile failed:\n{}",
+        "proof compile failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -2076,7 +2076,7 @@ fn binary_compile_target_site_writes_static_site() {
     let beta = std::fs::read_to_string(site_dir.join("beta.html")).unwrap();
     let index = std::fs::read_to_string(site_dir.join("index.html")).unwrap();
     let site_manifest: serde_json::Value =
-        serde_json::from_str(&std::fs::read_to_string(site_dir.join("mdloom-site.json")).unwrap())
+        serde_json::from_str(&std::fs::read_to_string(site_dir.join("proof-site.json")).unwrap())
             .unwrap();
 
     assert!(alpha.contains("<h1>Alpha</h1>"), "got:\n{}", alpha);
@@ -2091,12 +2091,12 @@ fn binary_compile_target_site_writes_static_site() {
         "got:\n{}",
         index
     );
-    assert_eq!(site_manifest["schema"], "mdloom.publish.site.v1");
+    assert_eq!(site_manifest["schema"], "proof.publish.site.v1");
     assert_eq!(site_manifest["page_count"], 2);
     assert_eq!(site_manifest["pages"][0]["href"], "alpha.html");
     assert_eq!(site_manifest["pages"][1]["title"], "Beta");
 
-    let manifest_path = dir.path().join(".mdloom").join("artifacts.json");
+    let manifest_path = dir.path().join(".proof").join("artifacts.json");
     let manifest: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&manifest_path).unwrap()).unwrap();
     assert_eq!(manifest["artifacts"].as_array().unwrap().len(), 2);
@@ -2129,22 +2129,18 @@ fn binary_compile_target_pdf_writes_pdf() {
         .arg("-o")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom compile");
+        .expect("failed to run proof compile");
 
     assert!(
         output.status.success(),
-        "mdloom compile failed:\n{}",
+        "proof compile failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
     let pdf = std::fs::read(&output_path).expect("pdf output");
     assert!(pdf.starts_with(b"%PDF-1.4"));
     let pdf_text = String::from_utf8_lossy(&pdf);
-    assert!(
-        pdf_text.contains("/Producer (MDLOOM)"),
-        "got:\n{}",
-        pdf_text
-    );
+    assert!(pdf_text.contains("/Producer (PROOF)"), "got:\n{}", pdf_text);
     assert!(pdf_text.contains("(Guide) Tj"), "got:\n{}", pdf_text);
     assert!(
         pdf_text.contains("Body with <angle> text"),
@@ -2152,7 +2148,7 @@ fn binary_compile_target_pdf_writes_pdf() {
         pdf_text
     );
 
-    let manifest_path = dir.path().join(".mdloom").join("artifacts.json");
+    let manifest_path = dir.path().join(".proof").join("artifacts.json");
     let manifest: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&manifest_path).unwrap()).unwrap();
     assert_eq!(manifest["artifacts"][0]["target"], "pdf");
@@ -2184,11 +2180,11 @@ fn binary_compile_target_docx_writes_docx() {
         .arg("-o")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom compile");
+        .expect("failed to run proof compile");
 
     assert!(
         output.status.success(),
-        "mdloom compile failed:\n{}",
+        "proof compile failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -2228,7 +2224,7 @@ fn binary_compile_target_docx_writes_docx() {
     assert!(document.contains("<w:tbl>"), "got:\n{}", document);
     assert!(document.contains("let x = 1;"), "got:\n{}", document);
 
-    let manifest_path = dir.path().join(".mdloom").join("artifacts.json");
+    let manifest_path = dir.path().join(".proof").join("artifacts.json");
     let manifest: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&manifest_path).unwrap()).unwrap();
     assert_eq!(manifest["artifacts"][0]["target"], "docx");
@@ -2246,7 +2242,7 @@ fn binary_compile_target_pptx_writes_deck() {
     let output_path = dir.path().join("deck.pptx");
     std::fs::write(
         &source,
-        "```mdloom:slide layout=title title=\"Deck\" subtitle=\"Native slides\"\n```\n---\n```mdloom:slide layout=title-content title=\"Plan\"\nmdloom:bullets\n- First\n  - Nested\n1. Numbered\n~~~text\nlet x = 1;\n~~~\n~~~mdloom:notes\nPresenter note.\n~~~\n```\n",
+        "```proof:slide layout=title title=\"Deck\" subtitle=\"Native slides\"\n```\n---\n```proof:slide layout=title-content title=\"Plan\"\nproof:bullets\n- First\n  - Nested\n1. Numbered\n~~~text\nlet x = 1;\n~~~\n~~~proof:notes\nPresenter note.\n~~~\n```\n",
     )
     .unwrap();
 
@@ -2260,11 +2256,11 @@ fn binary_compile_target_pptx_writes_deck() {
         .arg("-o")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom compile");
+        .expect("failed to run proof compile");
 
     assert!(
         output.status.success(),
-        "mdloom compile failed:\n{}",
+        "proof compile failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -2303,7 +2299,7 @@ fn binary_compile_target_pptx_writes_deck() {
     .unwrap();
     assert!(notes.contains("Presenter note."), "got:\n{}", notes);
 
-    let manifest_path = dir.path().join(".mdloom").join("artifacts.json");
+    let manifest_path = dir.path().join(".proof").join("artifacts.json");
     let manifest: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&manifest_path).unwrap()).unwrap();
     assert_eq!(manifest["artifacts"][0]["target"], "pptx");
@@ -2311,24 +2307,24 @@ fn binary_compile_target_pptx_writes_deck() {
 
 #[test]
 fn publish_backends_consume_resolved_compile_output() {
-    use mdloom_lib::compile::compile_file;
-    use mdloom_lib::frontmatter::SourceFrontmatter;
-    use mdloom_lib::publish::{
+    use proof_lib::compile::compile_file;
+    use proof_lib::frontmatter::SourceFrontmatter;
+    use proof_lib::publish::{
         html_to_pdf_document, markdown_to_docx_document, markdown_to_html_document,
         markdown_to_json_report_bundle, JsonReportCompile,
     };
-    use mdloom_lib::MdloomConfig;
+    use proof_lib::ProofConfig;
 
     let dir = tempfile::tempdir().unwrap();
     let source = dir.path().join("doc.source.md");
     let output_path = dir.path().join("doc.md");
     std::fs::write(
         &source,
-        "# Source\n\n```mdloom:toc max-depth=2 style=list\n```\n\n## Install\n## Usage\n",
+        "# Source\n\n```proof:toc max-depth=2 style=list\n```\n\n## Install\n## Usage\n",
     )
     .unwrap();
 
-    let cfg = MdloomConfig::default();
+    let cfg = ProofConfig::default();
     let result = compile_file(&source, &output_path, dir.path(), &cfg).unwrap();
     let violations = result
         .violations
@@ -2344,7 +2340,7 @@ fn publish_backends_consume_resolved_compile_output() {
 
     let markdown = std::fs::read_to_string(&output_path).unwrap();
     assert!(markdown.contains("Install"), "got:\n{}", markdown);
-    assert!(!markdown.contains("```mdloom:toc"), "got:\n{}", markdown);
+    assert!(!markdown.contains("```proof:toc"), "got:\n{}", markdown);
 
     let html = markdown_to_html_document(&markdown, "fallback");
     assert!(html.contains("<h1>Source</h1>"), "got:\n{}", html);
@@ -2354,7 +2350,7 @@ fn publish_backends_consume_resolved_compile_output() {
         &markdown,
         "fallback",
         &source,
-        dir.path().join("doc.mdloom-report.json").as_path(),
+        dir.path().join("doc.proof-report.json").as_path(),
         &result.resolved_files,
         SourceFrontmatter::default(),
         JsonReportCompile {
@@ -2385,20 +2381,20 @@ fn publish_backends_consume_resolved_compile_output() {
 
 #[test]
 fn publication_ast_uses_resolved_compile_output() {
-    use mdloom_lib::compile::compile_file;
-    use mdloom_lib::publication::{PublicationBlock, PublicationDocument};
-    use mdloom_lib::MdloomConfig;
+    use proof_lib::compile::compile_file;
+    use proof_lib::publication::{PublicationBlock, PublicationDocument};
+    use proof_lib::ProofConfig;
 
     let dir = tempfile::tempdir().unwrap();
     let source = dir.path().join("doc.source.md");
     let output_path = dir.path().join("doc.md");
     std::fs::write(
         &source,
-        "# Source\n\n```mdloom:toc max-depth=2 style=list\n```\n\n## Install\n## Usage\n",
+        "# Source\n\n```proof:toc max-depth=2 style=list\n```\n\n## Install\n## Usage\n",
     )
     .unwrap();
 
-    let cfg = MdloomConfig::default();
+    let cfg = ProofConfig::default();
     let result = compile_file(&source, &output_path, dir.path(), &cfg).unwrap();
     assert!(
         result.violations.is_empty(),
@@ -2407,7 +2403,7 @@ fn publication_ast_uses_resolved_compile_output() {
     );
 
     let markdown = std::fs::read_to_string(&output_path).unwrap();
-    assert!(!markdown.contains("```mdloom:toc"), "got:\n{}", markdown);
+    assert!(!markdown.contains("```proof:toc"), "got:\n{}", markdown);
 
     let doc = PublicationDocument::from_resolved_markdown(&markdown, "fallback");
     assert_eq!(doc.title, "Source");
@@ -2448,19 +2444,19 @@ fn binary_compile_writes_artifact_manifest() {
         .arg("-o")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom compile");
+        .expect("failed to run proof compile");
 
     assert!(
         output.status.success(),
-        "mdloom compile failed:\n{}",
+        "proof compile failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
-    let manifest_path = dir.path().join(".mdloom").join("artifacts.json");
+    let manifest_path = dir.path().join(".proof").join("artifacts.json");
     let manifest: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&manifest_path).unwrap()).unwrap();
     assert_eq!(manifest["schema_version"], "1");
-    assert_eq!(manifest["generated_by"], "mdloom compile");
+    assert_eq!(manifest["generated_by"], "proof compile");
     assert_eq!(manifest["artifacts"].as_array().unwrap().len(), 1);
     assert_eq!(manifest["artifacts"][0]["target"], "html");
     assert_eq!(manifest["artifacts"][0]["status"], "written");
@@ -2482,7 +2478,7 @@ fn binary_compile_manifest_records_backlinks_side_info_dependency() {
     }
 
     let dir = tempfile::tempdir().unwrap();
-    let side_info = dir.path().join(".mdloom").join("side-info");
+    let side_info = dir.path().join(".proof").join("side-info");
     std::fs::create_dir_all(&side_info).unwrap();
     let backlinks_path = side_info.join("backlinks.json");
     std::fs::write(
@@ -2503,7 +2499,7 @@ fn binary_compile_manifest_records_backlinks_side_info_dependency() {
     let output_path = dir.path().join("manifest.md");
     std::fs::write(
         &source,
-        "# Manifest\n\n```mdloom:backlinks target=\"manifest.source.md\"\n```\n",
+        "# Manifest\n\n```proof:backlinks target=\"manifest.source.md\"\n```\n",
     )
     .unwrap();
 
@@ -2515,15 +2511,15 @@ fn binary_compile_manifest_records_backlinks_side_info_dependency() {
         .arg("-o")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom compile");
+        .expect("failed to run proof compile");
 
     assert!(
         output.status.success(),
-        "mdloom compile failed:\n{}",
+        "proof compile failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
-    let manifest_path = dir.path().join(".mdloom").join("artifacts.json");
+    let manifest_path = dir.path().join(".proof").join("artifacts.json");
     let manifest: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&manifest_path).unwrap()).unwrap();
     assert_eq!(
@@ -2561,17 +2557,17 @@ fn binary_mdcrop_status_delegates_to_mdcrop_status() {
         .arg("--strict-on")
         .arg("duplicate-anchors")
         .arg("--title")
-        .arg("MDLOOM Guides")
+        .arg("PROOF Guides")
         .arg("--extension")
         .arg("md")
         .arg("--exclude-dir")
         .arg("target")
         .output()
-        .expect("failed to run mdloom mdcrop status");
+        .expect("failed to run proof mdcrop status");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop status failed:\n{}",
+        "proof mdcrop status failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -2597,7 +2593,7 @@ fn binary_mdcrop_status_delegates_to_mdcrop_status() {
         args
     );
     assert!(args.contains("--title"), "got: {}", args);
-    assert!(args.contains("MDLOOM Guides"), "got: {}", args);
+    assert!(args.contains("PROOF Guides"), "got: {}", args);
     assert!(args.contains("--extension md"), "got: {}", args);
     assert!(args.contains("--exclude-dir target"), "got: {}", args);
     assert!(args.contains("--format json"), "got: {}", args);
@@ -2625,11 +2621,11 @@ fn binary_mdcrop_status_uses_global_output() {
         .arg("--root")
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom mdcrop status");
+        .expect("failed to run proof mdcrop status");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop status failed:\n{}",
+        "proof mdcrop status failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -2663,11 +2659,11 @@ fn binary_mdcrop_status_uses_global_format() {
         .arg("--root")
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom mdcrop status");
+        .expect("failed to run proof mdcrop status");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop status failed:\n{}",
+        "proof mdcrop status failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -2696,7 +2692,7 @@ fn binary_mdcrop_status_rejects_local_text_format() {
         .arg("--format")
         .arg("text")
         .output()
-        .expect("failed to run mdloom mdcrop status");
+        .expect("failed to run proof mdcrop status");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -2727,7 +2723,7 @@ fn binary_mdcrop_status_rejects_strict_on_without_strict() {
         .arg("--strict-on")
         .arg("broken-links")
         .output()
-        .expect("failed to run mdloom mdcrop status");
+        .expect("failed to run proof mdcrop status");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -2757,7 +2753,7 @@ fn binary_mdcrop_status_rejects_unknown_strict_policy() {
         .arg("--strict-on")
         .arg("stale-artifacts")
         .output()
-        .expect("failed to run mdloom mdcrop status");
+        .expect("failed to run proof mdcrop status");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -2786,11 +2782,11 @@ fn binary_mdcrop_list_views_delegates_to_mdcrop_view_list() {
         .arg("--dir")
         .arg(&views_dir)
         .output()
-        .expect("failed to run mdloom mdcrop list-views");
+        .expect("failed to run proof mdcrop list-views");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop list-views failed:\n{}",
+        "proof mdcrop list-views failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -2845,11 +2841,11 @@ fn binary_mdcrop_list_views_writes_global_output() {
         .arg("--dir")
         .arg(&views_dir)
         .output()
-        .expect("failed to run mdloom mdcrop list-views");
+        .expect("failed to run proof mdcrop list-views");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop list-views failed:\n{}",
+        "proof mdcrop list-views failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     assert!(output.stdout.is_empty());
@@ -2878,7 +2874,7 @@ fn binary_mdcrop_list_views_rejects_global_markdown_format() {
         .arg(&mdcrop_bin)
         .arg("list-views")
         .output()
-        .expect("failed to run mdloom mdcrop list-views");
+        .expect("failed to run proof mdcrop list-views");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -2908,11 +2904,11 @@ fn binary_mdcrop_inspect_views_delegates_to_mdcrop_view_inspect() {
         .arg(&views_dir)
         .arg("--strict")
         .output()
-        .expect("failed to run mdloom mdcrop inspect-views");
+        .expect("failed to run proof mdcrop inspect-views");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop inspect-views failed:\n{}",
+        "proof mdcrop inspect-views failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -2950,11 +2946,11 @@ fn binary_mdcrop_inspect_views_can_inspect_single_file() {
         .arg("--file")
         .arg(&view_file)
         .output()
-        .expect("failed to run mdloom mdcrop inspect-views --file");
+        .expect("failed to run proof mdcrop inspect-views --file");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop inspect-views --file failed:\n{}",
+        "proof mdcrop inspect-views --file failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -2993,7 +2989,7 @@ fn binary_mdcrop_inspect_views_rejects_strict_single_file() {
         .arg(&view_file)
         .arg("--strict")
         .output()
-        .expect("failed to run mdloom mdcrop inspect-views --file");
+        .expect("failed to run proof mdcrop inspect-views --file");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -3027,7 +3023,7 @@ fn binary_mdcrop_inspect_views_rejects_file_with_dir() {
         .arg("--dir")
         .arg(&other_dir)
         .output()
-        .expect("failed to run mdloom mdcrop inspect-views --file");
+        .expect("failed to run proof mdcrop inspect-views --file");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -3063,11 +3059,11 @@ fn binary_mdcrop_inspect_views_forwards_single_file_overrides() {
         .arg("--exclude-dir")
         .arg("target")
         .output()
-        .expect("failed to run mdloom mdcrop inspect-views --file");
+        .expect("failed to run proof mdcrop inspect-views --file");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop inspect-views --file failed:\n{}",
+        "proof mdcrop inspect-views --file failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -3103,7 +3099,7 @@ fn binary_mdcrop_inspect_views_rejects_store_overrides() {
         .arg("--query")
         .arg("refresh docs")
         .output()
-        .expect("failed to run mdloom mdcrop inspect-views");
+        .expect("failed to run proof mdcrop inspect-views");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -3156,11 +3152,11 @@ fn binary_mdcrop_inspect_views_writes_output() {
         .arg("--output")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom mdcrop inspect-views");
+        .expect("failed to run proof mdcrop inspect-views");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop inspect-views failed:\n{}",
+        "proof mdcrop inspect-views failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     assert!(output.stdout.is_empty());
@@ -3215,11 +3211,11 @@ fn binary_mdcrop_inspect_views_uses_global_output() {
         .arg("--dir")
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom mdcrop inspect-views");
+        .expect("failed to run proof mdcrop inspect-views");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop inspect-views failed:\n{}",
+        "proof mdcrop inspect-views failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     assert!(output.stdout.is_empty());
@@ -3250,7 +3246,7 @@ fn binary_mdcrop_inspect_views_rejects_global_markdown_format() {
         .arg("--dir")
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom mdcrop inspect-views");
+        .expect("failed to run proof mdcrop inspect-views");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -3299,7 +3295,7 @@ fn binary_mdcrop_inspect_views_writes_output_on_failure() {
         .arg("--output")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom mdcrop inspect-views");
+        .expect("failed to run proof mdcrop inspect-views");
 
     assert_eq!(output.status.code(), Some(7));
     assert_eq!(
@@ -3318,7 +3314,7 @@ fn binary_mdcrop_view_writes_mdcrop_view_recipe() {
 
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("mdloom.toml"),
+        dir.path().join("proof.toml"),
         r#"
 [files]
 include = ["src/**/*.source.md"]
@@ -3346,11 +3342,11 @@ exclude = ["target/**"]
         .arg("--content-tag")
         .arg("markdown")
         .output()
-        .expect("failed to run mdloom mdcrop view");
+        .expect("failed to run proof mdcrop view");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop view failed:\n{}",
+        "proof mdcrop view failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -3379,7 +3375,7 @@ fn binary_mdcrop_view_uses_global_output() {
 
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("mdloom.toml"),
+        dir.path().join("proof.toml"),
         r#"
 [files]
 include = ["src/**/*.source.md"]
@@ -3398,11 +3394,11 @@ include = ["src/**/*.source.md"]
         .arg("--name")
         .arg("global-view")
         .output()
-        .expect("failed to run mdloom mdcrop view");
+        .expect("failed to run proof mdcrop view");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop view failed:\n{}",
+        "proof mdcrop view failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -3444,11 +3440,11 @@ fn binary_mdcrop_run_view_delegates_to_mdcrop_view_file() {
         .arg("--prefix-cache")
         .arg("generic")
         .output()
-        .expect("failed to run mdloom mdcrop run-view");
+        .expect("failed to run proof mdcrop run-view");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop run-view failed:\n{}",
+        "proof mdcrop run-view failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let args = std::fs::read_to_string(&args_file).expect("fake mdcrop args");
@@ -3505,11 +3501,11 @@ fn binary_mdcrop_run_view_writes_global_output() {
         .arg("--file")
         .arg(&view_file)
         .output()
-        .expect("failed to run mdloom mdcrop run-view");
+        .expect("failed to run proof mdcrop run-view");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop run-view failed:\n{}",
+        "proof mdcrop run-view failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     assert!(output.stdout.is_empty());
@@ -3542,7 +3538,7 @@ fn binary_mdcrop_run_view_rejects_global_markdown_format() {
         .arg("--file")
         .arg(&view_file)
         .output()
-        .expect("failed to run mdloom mdcrop run-view");
+        .expect("failed to run proof mdcrop run-view");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -3573,7 +3569,7 @@ fn binary_mdcrop_run_view_rejects_unknown_prefix_cache() {
         .arg("--prefix-cache")
         .arg("specialized")
         .output()
-        .expect("failed to run mdloom mdcrop run-view");
+        .expect("failed to run proof mdcrop run-view");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -3602,7 +3598,7 @@ fn binary_mdcrop_view_rejects_global_markdown_format() {
         .arg("--output")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom mdcrop view");
+        .expect("failed to run proof mdcrop view");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -3640,11 +3636,11 @@ fn binary_mdcrop_side_info_delegates_to_named_mdcrop_report() {
         .arg("--exclude-dir")
         .arg("target")
         .output()
-        .expect("failed to run mdloom mdcrop frontmatter");
+        .expect("failed to run proof mdcrop frontmatter");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop frontmatter failed:\n{}",
+        "proof mdcrop frontmatter failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -3677,7 +3673,7 @@ fn binary_mdcrop_sync_generates_all_side_info_reports() {
     let dir = tempfile::tempdir().unwrap();
     let args_file = dir.path().join("mdcrop-args.txt");
     let mdcrop_bin = write_fake_mdcrop_bin(dir.path(), &args_file, 0);
-    let output_dir = dir.path().join(".mdloom").join("side-info");
+    let output_dir = dir.path().join(".proof").join("side-info");
 
     let output = std::process::Command::new(&bin)
         .arg("mdcrop")
@@ -3693,11 +3689,11 @@ fn binary_mdcrop_sync_generates_all_side_info_reports() {
         .arg("--exclude-dir")
         .arg("target")
         .output()
-        .expect("failed to run mdloom mdcrop sync");
+        .expect("failed to run proof mdcrop sync");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop sync failed:\n{}",
+        "proof mdcrop sync failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -3741,7 +3737,7 @@ fn binary_mdcrop_sync_rejects_global_output() {
         .arg("--root")
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom mdcrop sync");
+        .expect("failed to run proof mdcrop sync");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -3760,8 +3756,8 @@ fn binary_mdcrop_prepare_inspects_views_then_syncs_side_info() {
     let args_file = dir.path().join("mdcrop-args.txt");
     let mdcrop_bin = write_fake_mdcrop_bin(dir.path(), &args_file, 0);
     let view_dir = dir.path().join(".mdcrop").join("views");
-    let view_file = view_dir.join("mdloom-guides.json");
-    let output_dir = dir.path().join(".mdloom").join("side-info");
+    let view_file = view_dir.join("proof-guides.json");
+    let output_dir = dir.path().join(".proof").join("side-info");
     std::fs::create_dir_all(&view_dir).unwrap();
     std::fs::write(&view_file, "{}").unwrap();
 
@@ -3777,11 +3773,11 @@ fn binary_mdcrop_prepare_inspects_views_then_syncs_side_info() {
         .arg("--output-dir")
         .arg(&output_dir)
         .output()
-        .expect("failed to run mdloom mdcrop prepare");
+        .expect("failed to run proof mdcrop prepare");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop prepare failed:\n{}",
+        "proof mdcrop prepare failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -3831,7 +3827,7 @@ fn binary_mdcrop_prepare_rejects_global_output() {
     let dir = tempfile::tempdir().unwrap();
     let args_file = dir.path().join("mdcrop-args.txt");
     let mdcrop_bin = write_fake_mdcrop_bin(dir.path(), &args_file, 0);
-    let view_file = dir.path().join("mdloom-guides.json");
+    let view_file = dir.path().join("proof-guides.json");
     std::fs::write(&view_file, "{}").unwrap();
 
     let output = std::process::Command::new(&bin)
@@ -3844,7 +3840,7 @@ fn binary_mdcrop_prepare_rejects_global_output() {
         .arg("--view")
         .arg(&view_file)
         .output()
-        .expect("failed to run mdloom mdcrop prepare");
+        .expect("failed to run proof mdcrop prepare");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -3884,11 +3880,11 @@ fn binary_mdcrop_backlink_list_renders_target_snippet() {
         .arg("--side-info")
         .arg(&side_info)
         .output()
-        .expect("failed to run mdloom mdcrop backlink-list");
+        .expect("failed to run proof mdcrop backlink-list");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop backlink-list failed:\n{}",
+        "proof mdcrop backlink-list failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -3926,11 +3922,11 @@ fn binary_mdcrop_link_list_renders_filtered_snippet() {
         .arg("--side-info")
         .arg(&side_info)
         .output()
-        .expect("failed to run mdloom mdcrop link-list");
+        .expect("failed to run proof mdcrop link-list");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop link-list failed:\n{}",
+        "proof mdcrop link-list failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -3957,7 +3953,7 @@ fn binary_mdcrop_link_list_rejects_global_json_format() {
         .arg("--side-info")
         .arg(&side_info)
         .output()
-        .expect("failed to run mdloom mdcrop link-list");
+        .expect("failed to run proof mdcrop link-list");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -3982,7 +3978,7 @@ fn binary_mdcrop_link_list_rejects_invalid_local_status_before_reading_side_info
         .arg("--status")
         .arg("maybe")
         .output()
-        .expect("failed to run mdloom mdcrop link-list");
+        .expect("failed to run proof mdcrop link-list");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -4017,7 +4013,7 @@ fn binary_mdcrop_backlink_list_rejects_invalid_local_format_before_reading_side_
         .arg("--format")
         .arg("yaml")
         .output()
-        .expect("failed to run mdloom mdcrop backlink-list");
+        .expect("failed to run proof mdcrop backlink-list");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -4054,7 +4050,7 @@ fn binary_mdcrop_frontmatter_list_rejects_invalid_local_op_before_reading_side_i
         .arg("--op")
         .arg("contains")
         .output()
-        .expect("failed to run mdloom mdcrop frontmatter-list");
+        .expect("failed to run proof mdcrop frontmatter-list");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -4100,11 +4096,11 @@ fn binary_mdcrop_link_list_writes_table_output() {
         .arg("--output")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom mdcrop link-list --output");
+        .expect("failed to run proof mdcrop link-list --output");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop link-list --output failed:\n{}",
+        "proof mdcrop link-list --output failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let rendered = std::fs::read_to_string(&output_path).unwrap();
@@ -4144,11 +4140,11 @@ fn binary_mdcrop_link_list_uses_global_output() {
         .arg("--format")
         .arg("table")
         .output()
-        .expect("failed to run mdloom mdcrop link-list");
+        .expect("failed to run proof mdcrop link-list");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop link-list failed:\n{}",
+        "proof mdcrop link-list failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let rendered = std::fs::read_to_string(&output_path).unwrap();
@@ -4193,11 +4189,11 @@ fn binary_mdcrop_backlink_list_writes_table_output() {
         .arg("--output")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom mdcrop backlink-list --output");
+        .expect("failed to run proof mdcrop backlink-list --output");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop backlink-list --output failed:\n{}",
+        "proof mdcrop backlink-list --output failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let rendered = std::fs::read_to_string(&output_path).unwrap();
@@ -4234,11 +4230,11 @@ fn binary_mdcrop_heading_list_renders_source_snippet() {
         .arg("--side-info")
         .arg(&side_info)
         .output()
-        .expect("failed to run mdloom mdcrop heading-list");
+        .expect("failed to run proof mdcrop heading-list");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop heading-list failed:\n{}",
+        "proof mdcrop heading-list failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -4281,11 +4277,11 @@ fn binary_mdcrop_heading_list_writes_count_output() {
         .arg("--output")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom mdcrop heading-list --output");
+        .expect("failed to run proof mdcrop heading-list --output");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop heading-list --output failed:\n{}",
+        "proof mdcrop heading-list --output failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let rendered = std::fs::read_to_string(&output_path).unwrap();
@@ -4308,12 +4304,12 @@ fn binary_mdcrop_frontmatter_list_renders_filtered_snippet() {
     {
       "source": "README.md",
       "keys": ["status", "tags", "title"],
-      "fields": { "status": "ready", "tags": "[mdloom, guide]", "title": "Readme" }
+      "fields": { "status": "ready", "tags": "[proof, guide]", "title": "Readme" }
     },
     {
       "source": "draft.md",
       "keys": ["status", "tags", "title"],
-      "fields": { "status": "draft", "tags": "[mdloom]", "title": "Draft" }
+      "fields": { "status": "draft", "tags": "[proof]", "title": "Draft" }
     }
   ]
 }"#,
@@ -4330,11 +4326,11 @@ fn binary_mdcrop_frontmatter_list_renders_filtered_snippet() {
         .arg("--value")
         .arg("guide")
         .output()
-        .expect("failed to run mdloom mdcrop frontmatter-list");
+        .expect("failed to run proof mdcrop frontmatter-list");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop frontmatter-list failed:\n{}",
+        "proof mdcrop frontmatter-list failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -4382,11 +4378,11 @@ fn binary_mdcrop_frontmatter_list_writes_table_output() {
         .arg("--output")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom mdcrop frontmatter-list --output");
+        .expect("failed to run proof mdcrop frontmatter-list --output");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop frontmatter-list --output failed:\n{}",
+        "proof mdcrop frontmatter-list --output failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let rendered = std::fs::read_to_string(&output_path).unwrap();
@@ -4420,11 +4416,11 @@ fn binary_mdcrop_artifacts_delegates_to_mdcrop_artifacts() {
         .arg("--output")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom mdcrop artifacts");
+        .expect("failed to run proof mdcrop artifacts");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop artifacts failed:\n{}",
+        "proof mdcrop artifacts failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -4462,7 +4458,7 @@ fn binary_mdcrop_artifacts_requires_root_or_manifest() {
         .arg(&mdcrop_bin)
         .arg("artifacts")
         .output()
-        .expect("failed to run mdloom mdcrop artifacts");
+        .expect("failed to run proof mdcrop artifacts");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -4497,7 +4493,7 @@ fn binary_mdcrop_artifacts_rejects_root_and_manifest() {
         .arg("--manifest")
         .arg(&manifest_path)
         .output()
-        .expect("failed to run mdloom mdcrop artifacts");
+        .expect("failed to run proof mdcrop artifacts");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -4532,7 +4528,7 @@ fn binary_mdcrop_artifacts_rejects_global_rich_format() {
         .arg("--manifest")
         .arg(&manifest_path)
         .output()
-        .expect("failed to run mdloom mdcrop artifacts");
+        .expect("failed to run proof mdcrop artifacts");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -4559,7 +4555,7 @@ fn binary_mdcrop_relays_mdcrop_exit_code() {
         .arg("--dir")
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom mdcrop inspect-views");
+        .expect("failed to run proof mdcrop inspect-views");
 
     assert_eq!(output.status.code(), Some(7));
 }
@@ -4591,11 +4587,11 @@ fn binary_index_delegates_to_mdcrop_index() {
         .arg("--output")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom index");
+        .expect("failed to run proof index");
 
     assert!(
         output.status.success(),
-        "mdloom index failed:\n{}",
+        "proof index failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -4640,11 +4636,11 @@ fn binary_index_uses_global_output() {
         .arg("--root")
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom index");
+        .expect("failed to run proof index");
 
     assert!(
         output.status.success(),
-        "mdloom index failed:\n{}",
+        "proof index failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -4677,7 +4673,7 @@ fn binary_index_rejects_global_json_format() {
         .arg("--root")
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom index");
+        .expect("failed to run proof index");
 
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -4703,11 +4699,11 @@ fn binary_toc_delegates_to_mdcrop_index_with_toc_title() {
         .arg("--root")
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom toc");
+        .expect("failed to run proof toc");
 
     assert!(
         output.status.success(),
-        "mdloom toc failed:\n{}",
+        "proof toc failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -4739,11 +4735,11 @@ fn binary_catalog_delegates_to_mdcrop_catalog() {
         .arg("--output")
         .arg(dir.path().join("CATALOG.md"))
         .output()
-        .expect("failed to run mdloom catalog");
+        .expect("failed to run proof catalog");
 
     assert!(
         output.status.success(),
-        "mdloom catalog failed:\n{}",
+        "proof catalog failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
 
@@ -4762,12 +4758,12 @@ fn binary_real_mdcrop_index_generates_fixture_markdown() {
     let bin = debug_bin();
     assert!(
         bin.exists(),
-        "MDLOOM debug binary not found at {}",
+        "PROOF debug binary not found at {}",
         bin.display()
     );
     let mdcrop_manifest = required_sibling_mdcrop_manifest();
     let fixture_root = sibling_mdcrop_fixture_root(&mdcrop_manifest);
-    let view_file = fixture_root.join("mdloom-ready-view.json");
+    let view_file = fixture_root.join("proof-ready-view.json");
     assert!(
         view_file.exists(),
         "MDCROP proof fixture not found at {}",
@@ -4787,17 +4783,17 @@ fn binary_real_mdcrop_index_generates_fixture_markdown() {
         .arg("--output")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom index with real MDCROP");
+        .expect("failed to run proof index with real MDCROP");
 
     assert!(
         output.status.success(),
-        "mdloom index real MDCROP failed:\nstdout:\n{}\nstderr:\n{}",
+        "proof index real MDCROP failed:\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
 
     let index = std::fs::read_to_string(&output_path).expect("real MDCROP index output");
-    assert!(index.contains("# mdloom-fixture-ready"), "got:\n{}", index);
+    assert!(index.contains("# proof-fixture-ready"), "got:\n{}", index);
     assert!(index.contains("guide.source.md"), "got:\n{}", index);
     assert!(index.contains("reference.source.md"), "got:\n{}", index);
 }
@@ -4807,12 +4803,12 @@ fn binary_real_mdcrop_frontmatter_generates_fixture_json() {
     let bin = debug_bin();
     assert!(
         bin.exists(),
-        "MDLOOM debug binary not found at {}",
+        "PROOF debug binary not found at {}",
         bin.display()
     );
     let mdcrop_manifest = required_sibling_mdcrop_manifest();
     let fixture_root = sibling_mdcrop_fixture_root(&mdcrop_manifest);
-    let view_file = fixture_root.join("mdloom-ready-view.json");
+    let view_file = fixture_root.join("proof-ready-view.json");
     assert!(
         view_file.exists(),
         "MDCROP proof fixture not found at {}",
@@ -4835,11 +4831,11 @@ fn binary_real_mdcrop_frontmatter_generates_fixture_json() {
         .arg("--output")
         .arg(&output_path)
         .output()
-        .expect("failed to run mdloom mdcrop frontmatter with real MDCROP");
+        .expect("failed to run proof mdcrop frontmatter with real MDCROP");
 
     assert!(
         output.status.success(),
-        "mdloom mdcrop frontmatter real MDCROP failed:\nstdout:\n{}\nstderr:\n{}",
+        "proof mdcrop frontmatter real MDCROP failed:\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
@@ -4881,17 +4877,17 @@ fn binary_compile_tag_filter_limits_sources() {
         .arg("--tag")
         .arg("publish")
         .output()
-        .expect("failed to run mdloom compile --tag");
+        .expect("failed to run proof compile --tag");
 
     assert!(
         output.status.success(),
-        "mdloom compile --tag failed:\n{}",
+        "proof compile --tag failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     assert!(out_dir.join("publish.md").exists());
     assert!(!out_dir.join("draft.md").exists());
 
-    let manifest_path = dir.path().join(".mdloom").join("artifacts.json");
+    let manifest_path = dir.path().join(".proof").join("artifacts.json");
     let manifest: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&manifest_path).unwrap()).unwrap();
     assert_eq!(manifest["artifacts"].as_array().unwrap().len(), 1);
@@ -4930,11 +4926,11 @@ fn binary_check_tag_filter_limits_sources() {
         .arg("--tag")
         .arg("publish")
         .output()
-        .expect("failed to run mdloom check --tag");
+        .expect("failed to run proof check --tag");
 
     assert!(
         output.status.success(),
-        "mdloom check --tag failed:\n{}",
+        "proof check --tag failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -4949,7 +4945,7 @@ fn binary_pin_list_prints_registered_davinci_entries() {
     }
 
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("mdloom.toml");
+    let config_path = dir.path().join("proof.toml");
     std::fs::write(
         &config_path,
         r#"
@@ -4968,11 +4964,11 @@ protection = "warn"
         .arg(&config_path)
         .arg("pin-list")
         .output()
-        .expect("failed to run mdloom pin-list");
+        .expect("failed to run proof pin-list");
 
     assert!(
         output.status.success(),
-        "mdloom pin-list failed:\n{}",
+        "proof pin-list failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -4988,7 +4984,7 @@ fn binary_pin_appends_davinci_entry() {
     }
 
     let dir = tempfile::tempdir().unwrap();
-    std::fs::write(dir.path().join("mdloom.toml"), "").unwrap();
+    std::fs::write(dir.path().join("proof.toml"), "").unwrap();
     std::fs::write(
         dir.path().join("README.md"),
         "# Readme\n\n## Overview\n\nPinned content.\n",
@@ -5006,15 +5002,15 @@ fn binary_pin_appends_davinci_entry() {
             "Overview section",
         ])
         .output()
-        .expect("failed to run mdloom pin");
+        .expect("failed to run proof pin");
 
     assert!(
         output.status.success(),
-        "mdloom pin failed:\nstdout:\n{}\nstderr:\n{}",
+        "proof pin failed:\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
-    let toml = std::fs::read_to_string(dir.path().join("mdloom.toml")).unwrap();
+    let toml = std::fs::read_to_string(dir.path().join("proof.toml")).unwrap();
     assert!(toml.contains("[[davinci]]"), "got:\n{}", toml);
     assert!(toml.contains("id = \"overview-section\""), "got:\n{}", toml);
     assert!(toml.contains("uri = \"README.md\""), "got:\n{}", toml);
@@ -5049,11 +5045,11 @@ fn binary_resolve_prints_json_for_heading() {
         ])
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom resolve");
+        .expect("failed to run proof resolve");
 
     assert!(
         output.status.success(),
-        "mdloom resolve failed:\nstdout:\n{}\nstderr:\n{}",
+        "proof resolve failed:\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
@@ -5073,11 +5069,11 @@ fn binary_depends_prints_json_references() {
     }
 
     let dir = tempfile::tempdir().unwrap();
-    std::fs::write(dir.path().join("mdloom.toml"), "").unwrap();
+    std::fs::write(dir.path().join("proof.toml"), "").unwrap();
     std::fs::write(dir.path().join("figure.md"), "# Figure\n").unwrap();
     std::fs::write(
         dir.path().join("doc.source.md"),
-        "# Source\n\n```mdloom:include md://figure.md\n```\n",
+        "# Source\n\n```proof:include md://figure.md\n```\n",
     )
     .unwrap();
 
@@ -5085,11 +5081,11 @@ fn binary_depends_prints_json_references() {
         .args(["depends", "md://figure.md", "--format", "json", "--root"])
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom depends");
+        .expect("failed to run proof depends");
 
     assert!(
         output.status.success(),
-        "mdloom depends failed:\nstdout:\n{}\nstderr:\n{}",
+        "proof depends failed:\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
@@ -5125,11 +5121,11 @@ fn binary_tree_generate_prints_dirtree() {
         .arg(dir.path())
         .args(["--max-depth", "1", "--no-fence"])
         .output()
-        .expect("failed to run mdloom tree generate");
+        .expect("failed to run proof tree generate");
 
     assert!(
         output.status.success(),
-        "mdloom tree generate failed:\nstdout:\n{}\nstderr:\n{}",
+        "proof tree generate failed:\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
@@ -5154,11 +5150,11 @@ fn binary_layout_composes_file_sources() {
         .args(["layout", "left.txt", "right.txt", "--gap", "2", "--root"])
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom layout");
+        .expect("failed to run proof layout");
 
     assert!(
         output.status.success(),
-        "mdloom layout failed:\nstdout:\n{}\nstderr:\n{}",
+        "proof layout failed:\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
@@ -5179,7 +5175,7 @@ fn binary_check_summary_file_count_honors_include_exclude() {
     std::fs::create_dir_all(dir.path().join("docs")).unwrap();
     std::fs::write(dir.path().join("docs").join("one.md"), "# One\n").unwrap();
     std::fs::write(dir.path().join("skip.md"), "# Skip\n").unwrap();
-    let config_path = dir.path().join("mdloom.toml");
+    let config_path = dir.path().join("proof.toml");
     std::fs::write(
         &config_path,
         r#"
@@ -5195,11 +5191,11 @@ include = ["docs/**/*.md"]
         .arg("--no-fail")
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom check");
+        .expect("failed to run proof check");
 
     assert!(
         output.status.success(),
-        "mdloom check failed:\n{}",
+        "proof check failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -5220,10 +5216,10 @@ fn binary_help_documents_progress_only_for_compile() {
     let check_help = std::process::Command::new(&bin)
         .args(["check", "--help"])
         .output()
-        .expect("failed to run mdloom check --help");
+        .expect("failed to run proof check --help");
     assert!(
         check_help.status.success(),
-        "mdloom check --help failed:\n{}",
+        "proof check --help failed:\n{}",
         String::from_utf8_lossy(&check_help.stderr)
     );
     let check_stdout = String::from_utf8_lossy(&check_help.stdout);
@@ -5236,10 +5232,10 @@ fn binary_help_documents_progress_only_for_compile() {
     let compile_help = std::process::Command::new(&bin)
         .args(["compile", "--help"])
         .output()
-        .expect("failed to run mdloom compile --help");
+        .expect("failed to run proof compile --help");
     assert!(
         compile_help.status.success(),
-        "mdloom compile --help failed:\n{}",
+        "proof compile --help failed:\n{}",
         String::from_utf8_lossy(&compile_help.stderr)
     );
     let compile_stdout = String::from_utf8_lossy(&compile_help.stdout);
@@ -5256,7 +5252,7 @@ fn runner_explicit_config_skips_disk_cascade() {
     let doc = dir.path().join("doc.md");
     std::fs::write(&doc, "# Title\n").unwrap();
 
-    let config: MdloomConfig = toml::from_str(
+    let config: ProofConfig = toml::from_str(
         r#"
 [markdown]
 enabled = true
@@ -5269,7 +5265,7 @@ required_h2_all = ["Decision Cheat Sheet"]
     let diags = runner.lint_file(&doc);
     assert!(
         diags.iter().any(|d| d.code == "md_missing_section"),
-        "explicit runner config must be applied even without mdloom.toml on disk:\n{}",
+        "explicit runner config must be applied even without proof.toml on disk:\n{}",
         format_diags(&diags)
     );
 }
@@ -5302,7 +5298,7 @@ required_h2_all = ["Decision Cheat Sheet"]
         .arg(&config_path)
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom stats");
+        .expect("failed to run proof stats");
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -5322,7 +5318,7 @@ fn runner_path_summary_counts_file_and_directory_inputs() {
     std::fs::write(&one, "# One\n").unwrap();
     std::fs::write(docs.join("skip.txt"), "not markdown\n").unwrap();
 
-    let cfg = MdloomConfig::default();
+    let cfg = ProofConfig::default();
     let file_runner = Runner::new(&docs, cfg.clone()).unwrap();
     let file_summary = file_runner.run_path_summary(&one);
     assert_eq!(file_summary.files_checked, 1);
@@ -5347,7 +5343,7 @@ fn binary_config_prints_effective_cascaded_config() {
     let child = root.join("guides");
     std::fs::create_dir_all(&child).unwrap();
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [files]
 root = true
@@ -5359,7 +5355,7 @@ required_h2_all = ["Root Requirement"]
     )
     .unwrap();
     std::fs::write(
-        child.join("mdloom.toml"),
+        child.join("proof.toml"),
         r#"
 [markdown]
 required_h2_all = ["Child Requirement"]
@@ -5373,11 +5369,11 @@ required_h2_all = ["Child Requirement"]
         .args(["config"])
         .arg(&doc)
         .output()
-        .expect("failed to run mdloom config");
+        .expect("failed to run proof config");
 
     assert!(
         output.status.success(),
-        "mdloom config failed:\n{}",
+        "proof config failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -5399,7 +5395,7 @@ fn binary_config_honors_explicit_config_override() {
     let doc = dir.path().join("doc.md");
     std::fs::write(&doc, "# Doc\n").unwrap();
     std::fs::write(
-        dir.path().join("mdloom.toml"),
+        dir.path().join("proof.toml"),
         r#"
 [markdown]
 enabled = true
@@ -5424,11 +5420,11 @@ required_h2_all = ["External Requirement"]
         .args(["config"])
         .arg(&doc)
         .output()
-        .expect("failed to run mdloom config with override");
+        .expect("failed to run proof config with override");
 
     assert!(
         output.status.success(),
-        "mdloom config --config failed:\n{}",
+        "proof config --config failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -5456,7 +5452,7 @@ fn binary_missing_config_override_fails_loudly() {
         .arg("--no-fail")
         .arg(dir.path().join("doc.md"))
         .output()
-        .expect("failed to run mdloom with missing config");
+        .expect("failed to run proof with missing config");
 
     assert!(
         !output.status.success(),
@@ -5487,7 +5483,7 @@ fn binary_invalid_config_override_fails_loudly() {
         .arg(&config_path)
         .arg(dir.path())
         .output()
-        .expect("failed to run mdloom stats with invalid config");
+        .expect("failed to run proof stats with invalid config");
 
     assert!(
         !output.status.success(),
@@ -5540,7 +5536,7 @@ fn binary_fix_dry_run_writes_nothing() {
             "--no-verify",
         ])
         .output()
-        .expect("failed to run mdloom fix");
+        .expect("failed to run proof fix");
 
     // Invariant I-12: dry-run must not write
     let content_after = std::fs::read_to_string(&target).unwrap();
@@ -5561,7 +5557,7 @@ fn binary_fix_uses_global_config_for_verification_and_writes_log() {
     let target = dir.path().join("doc.md");
     std::fs::write(&target, "# One\n# Two\nold\n").unwrap();
     std::fs::write(
-        dir.path().join("mdloom.toml"),
+        dir.path().join("proof.toml"),
         "[markdown]\nenabled = true\nmax_h1 = 1\n",
     )
     .unwrap();
@@ -5595,11 +5591,11 @@ fn binary_fix_uses_global_config_for_verification_and_writes_log() {
         .arg(&plan_path)
         .arg("--no-signal-check")
         .output()
-        .expect("failed to run mdloom fix");
+        .expect("failed to run proof fix");
 
     assert!(
         output.status.success(),
-        "mdloom fix failed:\n{}",
+        "proof fix failed:\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
     assert_eq!(
@@ -5607,10 +5603,10 @@ fn binary_fix_uses_global_config_for_verification_and_writes_log() {
         "# One\n# Two\nnew\n"
     );
 
-    let log_path = dir.path().join(".mdloom").join("last-fix.json");
+    let log_path = dir.path().join(".proof").join("last-fix.json");
     let log: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&log_path).unwrap()).unwrap();
-    assert_eq!(log["generated_by"], "mdloom fix");
+    assert_eq!(log["generated_by"], "proof fix");
     assert_eq!(log["applied"], 1);
     assert_eq!(log["files_modified"], 1);
     assert_eq!(log["verification"]["status"], "passed");
@@ -5621,7 +5617,7 @@ fn binary_fix_uses_global_config_for_verification_and_writes_log() {
 }
 
 #[test]
-fn binary_init_creates_default_mdloom_toml() {
+fn binary_init_creates_default_proof_toml() {
     let bin = debug_bin();
     if !bin.exists() {
         return;
@@ -5632,15 +5628,15 @@ fn binary_init_creates_default_mdloom_toml() {
         .current_dir(dir.path())
         .arg("init")
         .output()
-        .expect("failed to run mdloom init");
+        .expect("failed to run proof init");
 
     assert!(
         output.status.success(),
-        "mdloom init should succeed: {}",
+        "proof init should succeed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    let config_path = dir.path().join("mdloom.toml");
-    assert!(config_path.exists(), "mdloom init must create mdloom.toml");
+    let config_path = dir.path().join("proof.toml");
+    assert!(config_path.exists(), "proof init must create proof.toml");
     let content = std::fs::read_to_string(config_path).unwrap();
     assert!(
         content.contains("[ascii_box]"),
@@ -5684,19 +5680,19 @@ fn markdown_table_in_code_block_is_not_a_box() {
 }
 
 // paths_exclude: overview file is excluded from generic rule, gets its own rules.
-// The schema is written to a real mdloom.toml in a temp dir — that's the correct
+// The schema is written to a real proof.toml in a temp dir — that's the correct
 // way to test cascade-resolved config (the runner discovers it from disk).
 #[test]
 fn section_schema_paths_exclude_skips_matching_files() {
-    use mdloom_lib::runner::Runner;
+    use proof_lib::runner::Runner;
 
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
 
-    // Write mdloom.toml — generic rule for all *.md EXCEPT 00-OVERVIEW.md,
+    // Write proof.toml — generic rule for all *.md EXCEPT 00-OVERVIEW.md,
     // and a separate rule for 00-OVERVIEW.md only.
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [files]
 root = true
@@ -5726,7 +5722,7 @@ required_h2_all = ["Language Genealogy"]
     let ov_file = root.join("00-OVERVIEW.md");
     std::fs::write(&ov_file, "# Overview\n\n## Language Genealogy\n\ncontent\n").unwrap();
 
-    let cfg = mdloom_lib::MdloomConfig::load_or_default(root);
+    let cfg = proof_lib::ProofConfig::load_or_default(root);
     let runner = Runner::new(root, cfg).unwrap();
 
     // 02-C.md must report missing "Type System Snapshot"
@@ -5759,13 +5755,13 @@ required_h2_all = ["Language Genealogy"]
 
 #[test]
 fn child_markdown_enabled_false_disables_parent_markdown() {
-    use mdloom_lib::runner::Runner;
+    use proof_lib::runner::Runner;
 
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
 
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [files]
 root = true
@@ -5780,7 +5776,7 @@ required_h2_all = ["Decision Cheat Sheet"]
     let child = root.join("child");
     std::fs::create_dir_all(&child).unwrap();
     std::fs::write(
-        child.join("mdloom.toml"),
+        child.join("proof.toml"),
         r#"
 [markdown]
 enabled = false
@@ -5791,7 +5787,7 @@ enabled = false
     let file = child.join("guide.md");
     std::fs::write(&file, "# Guide\n\nNo required section here.\n").unwrap();
 
-    let cfg = mdloom_lib::MdloomConfig::load_or_default(root);
+    let cfg = proof_lib::ProofConfig::load_or_default(root);
     let runner = Runner::new(root, cfg).unwrap();
     let diags = runner.lint_file(&file);
     assert!(
@@ -5804,12 +5800,12 @@ enabled = false
 // paths_exclude with multiple exclusions
 #[test]
 fn paths_exclude_multiple_files_skipped() {
-    use mdloom_lib::runner::Runner;
+    use proof_lib::runner::Runner;
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
 
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [files]
 root = true
@@ -5835,7 +5831,7 @@ required_h2_all = ["Type System Snapshot"]
     let cheat = root.join("01-CHEATSHEET.md");
     std::fs::write(&cheat, "# Cheatsheet\n\ncontent\n").unwrap();
 
-    let cfg = mdloom_lib::MdloomConfig::load_or_default(root);
+    let cfg = proof_lib::ProofConfig::load_or_default(root);
     let runner = Runner::new(root, cfg).unwrap();
 
     // Guide: requires it
@@ -5867,12 +5863,12 @@ required_h2_all = ["Type System Snapshot"]
 // paths_exclude with glob pattern (not just exact filename)
 #[test]
 fn paths_exclude_glob_pattern() {
-    use mdloom_lib::runner::Runner;
+    use proof_lib::runner::Runner;
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
 
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [files]
 root = true
@@ -5893,7 +5889,7 @@ required_h2_all = ["Type System Snapshot"]
     let cheat = root.join("01-CHEATSHEET.md");
     std::fs::write(&cheat, "# Cheatsheet\n\ncontent\n").unwrap();
 
-    let cfg = mdloom_lib::MdloomConfig::load_or_default(root);
+    let cfg = proof_lib::ProofConfig::load_or_default(root);
     let runner = Runner::new(root, cfg).unwrap();
 
     assert!(
@@ -5919,16 +5915,16 @@ required_h2_all = ["Type System Snapshot"]
     );
 }
 
-// Directory-level mdloom.toml: paths are relative to that directory, not root
+// Directory-level proof.toml: paths are relative to that directory, not root
 #[test]
 fn directory_schema_paths_relative_to_its_dir() {
-    use mdloom_lib::runner::Runner;
+    use proof_lib::runner::Runner;
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
 
-    // Root mdloom.toml — universal rule
+    // Root proof.toml — universal rule
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [files]
 root = true
@@ -5939,11 +5935,11 @@ required_h2_all = ["Decision Cheat Sheet"]
     )
     .unwrap();
 
-    // languages/ sub-directory with its own mdloom.toml
+    // languages/ sub-directory with its own proof.toml
     let langs = root.join("languages");
     std::fs::create_dir_all(&langs).unwrap();
     std::fs::write(
-        langs.join("mdloom.toml"),
+        langs.join("proof.toml"),
         r#"
 [markdown]
 enabled = true
@@ -5964,7 +5960,7 @@ required_h2_all = ["Type System Snapshot"]
     let overview = langs.join("00-OVERVIEW.md");
     std::fs::write(&overview, "# Overview\n\ncontent\n").unwrap();
 
-    let cfg = mdloom_lib::MdloomConfig::load_or_default(root);
+    let cfg = proof_lib::ProofConfig::load_or_default(root);
     let runner = Runner::new(root, cfg).unwrap();
 
     let guide_diags = runner.lint_file(&guide);
@@ -6001,12 +5997,12 @@ required_h2_all = ["Type System Snapshot"]
 // (section_schemas are additive — no "first match wins")
 #[test]
 fn section_schemas_are_additive_not_first_match_wins() {
-    use mdloom_lib::runner::Runner;
+    use proof_lib::runner::Runner;
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
 
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [files]
 root = true
@@ -6026,7 +6022,7 @@ required_h2_all = ["Section B"]
     let f = root.join("guide.md");
     std::fs::write(&f, "# Guide\n\n## Section A\n\ncontent\n").unwrap();
 
-    let cfg = mdloom_lib::MdloomConfig::load_or_default(root);
+    let cfg = proof_lib::ProofConfig::load_or_default(root);
     let runner = Runner::new(root, cfg).unwrap();
     let diags = runner.lint_file(&f);
 
@@ -6045,12 +6041,12 @@ required_h2_all = ["Section B"]
 // paths_exclude does not affect the base [markdown] config — only the section_schema
 #[test]
 fn paths_exclude_only_affects_its_own_schema() {
-    use mdloom_lib::runner::Runner;
+    use proof_lib::runner::Runner;
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
 
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [files]
 root = true
@@ -6069,7 +6065,7 @@ required_h2_all = ["Guide Section"]
     let overview = root.join("00-OVERVIEW.md");
     std::fs::write(&overview, "# Overview\n\ncontent\n").unwrap();
 
-    let cfg = mdloom_lib::MdloomConfig::load_or_default(root);
+    let cfg = proof_lib::ProofConfig::load_or_default(root);
     let runner = Runner::new(root, cfg).unwrap();
     let diags = runner.lint_file(&overview);
 
@@ -6090,12 +6086,12 @@ required_h2_all = ["Guide Section"]
 // Three-level cascade: root → languages/ → individual file picks up all levels
 #[test]
 fn three_level_cascade_all_rules_accumulate() {
-    use mdloom_lib::runner::Runner;
+    use proof_lib::runner::Runner;
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
 
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [files]
 root = true
@@ -6109,7 +6105,7 @@ required_h2_all = ["Root Requirement"]
     let langs = root.join("languages");
     std::fs::create_dir_all(&langs).unwrap();
     std::fs::write(
-        langs.join("mdloom.toml"),
+        langs.join("proof.toml"),
         r#"
 [markdown]
 enabled = true
@@ -6121,7 +6117,7 @@ required_h2_all = ["Dir Requirement"]
     let guide = langs.join("02-C.md");
     std::fs::write(&guide, "# C\n\ncontent\n").unwrap();
 
-    let cfg = mdloom_lib::MdloomConfig::load_or_default(root);
+    let cfg = proof_lib::ProofConfig::load_or_default(root);
     let runner = Runner::new(root, cfg).unwrap();
     let diags = runner.lint_file(&guide);
 
@@ -6136,17 +6132,17 @@ required_h2_all = ["Dir Requirement"]
     );
 }
 
-// Config cascade: two mdloom.toml files in a hierarchy produce additive required_h2_all
+// Config cascade: two proof.toml files in a hierarchy produce additive required_h2_all
 #[test]
 fn config_cascade_additive_required_sections() {
-    use mdloom_lib::config::merge;
-    use mdloom_lib::MdloomConfig;
+    use proof_lib::config::merge;
+    use proof_lib::ProofConfig;
 
-    let mut parent = MdloomConfig::default();
+    let mut parent = ProofConfig::default();
     parent.markdown.enabled = true;
     parent.markdown.required_h2_all = vec!["Decision Cheat Sheet".to_string()];
 
-    let mut child = MdloomConfig::default();
+    let mut child = ProofConfig::default();
     child.markdown.enabled = true;
     child.markdown.required_h2_all = vec!["Type System Snapshot".to_string()];
 
@@ -6182,7 +6178,7 @@ fn config_extends_stops_automatic_ancestor_cascade() {
     std::fs::create_dir_all(&child).unwrap();
 
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [files]
 root = true
@@ -6203,7 +6199,7 @@ required_h2_all = ["Shared Requirement"]
     )
     .unwrap();
     std::fs::write(
-        child.join("mdloom.toml"),
+        child.join("proof.toml"),
         r#"
 extends = "../../shared/base.toml"
 
@@ -6217,7 +6213,7 @@ required_h2_all = ["Child Requirement"]
     let guide = child.join("guide.md");
     std::fs::write(&guide, "# Guide\n").unwrap();
 
-    let cfg = mdloom_lib::MdloomConfig::resolve_for(&guide, root);
+    let cfg = proof_lib::ProofConfig::resolve_for(&guide, root);
     assert!(
         cfg.markdown
             .required_h2_all
@@ -6241,13 +6237,13 @@ required_h2_all = ["Child Requirement"]
 // Config merge: child's empty required_h2_all does NOT erase parent's
 #[test]
 fn config_merge_empty_child_preserves_parent_requirements() {
-    use mdloom_lib::config::merge;
-    use mdloom_lib::MdloomConfig;
+    use proof_lib::config::merge;
+    use proof_lib::ProofConfig;
 
-    let mut parent = MdloomConfig::default();
+    let mut parent = ProofConfig::default();
     parent.markdown.required_h2_all = vec!["Decision Cheat Sheet".to_string()];
 
-    let child = MdloomConfig::default(); // required_h2_all = [] (empty)
+    let child = ProofConfig::default(); // required_h2_all = [] (empty)
 
     let merged = merge(parent, child);
     assert!(
@@ -6262,17 +6258,17 @@ fn config_merge_empty_child_preserves_parent_requirements() {
 // Config merge: files.exclude is additive (child adds, not replaces)
 #[test]
 fn config_merge_files_exclude_is_additive() {
-    use mdloom_lib::config::{merge, FilesConfig};
-    use mdloom_lib::MdloomConfig;
+    use proof_lib::config::{merge, FilesConfig};
+    use proof_lib::ProofConfig;
 
-    let mut parent = MdloomConfig::default();
+    let mut parent = ProofConfig::default();
     parent.files = FilesConfig {
         include: vec!["**/*.md".to_string()],
         exclude: vec!["_archive/**".to_string()],
         root: false,
     };
 
-    let mut child = MdloomConfig::default();
+    let mut child = ProofConfig::default();
     child.files = FilesConfig {
         include: vec!["**/*.md".to_string()],
         exclude: vec!["drafts/**".to_string()], // child adds its own exclusion
@@ -6294,17 +6290,17 @@ fn config_merge_files_exclude_is_additive() {
 // Config merge: child's implicit default include does NOT erase parent's include.
 #[test]
 fn config_merge_default_child_include_preserves_parent_include() {
-    use mdloom_lib::config::{merge, FilesConfig};
-    use mdloom_lib::MdloomConfig;
+    use proof_lib::config::{merge, FilesConfig};
+    use proof_lib::ProofConfig;
 
-    let mut parent = MdloomConfig::default();
+    let mut parent = ProofConfig::default();
     parent.files = FilesConfig {
         include: vec!["docs/**/*.md".to_string()],
         exclude: vec![],
         root: false,
     };
 
-    let child = MdloomConfig::default();
+    let child = ProofConfig::default();
 
     let merged = merge(parent, child);
     assert_eq!(
@@ -6322,7 +6318,7 @@ fn config_merge_explicit_default_child_include_replaces_parent_include() {
     let child = root.join("guides");
     std::fs::create_dir_all(&child).unwrap();
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [files]
 include = ["docs/**/*.md"]
@@ -6330,7 +6326,7 @@ include = ["docs/**/*.md"]
     )
     .unwrap();
     std::fs::write(
-        child.join("mdloom.toml"),
+        child.join("proof.toml"),
         r#"
 [files]
 include = ["**/*.md"]
@@ -6341,7 +6337,7 @@ include = ["**/*.md"]
     let guide = child.join("guide.md");
     std::fs::write(&guide, "# Guide\n").unwrap();
 
-    let merged = mdloom_lib::MdloomConfig::resolve_for(&guide, root);
+    let merged = proof_lib::ProofConfig::resolve_for(&guide, root);
     assert_eq!(
         merged.files.include,
         vec!["**/*.md".to_string()],
@@ -6356,7 +6352,7 @@ fn config_explicit_markdown_disable_overrides_parent_enable() {
     let child = root.join("guides");
     std::fs::create_dir_all(&child).unwrap();
     std::fs::write(
-        root.join("mdloom.toml"),
+        root.join("proof.toml"),
         r#"
 [markdown]
 enabled = true
@@ -6365,7 +6361,7 @@ required_h2_all = ["Root Requirement"]
     )
     .unwrap();
     std::fs::write(
-        child.join("mdloom.toml"),
+        child.join("proof.toml"),
         r#"
 [markdown]
 enabled = false
@@ -6376,7 +6372,7 @@ enabled = false
     let guide = child.join("guide.md");
     std::fs::write(&guide, "# Guide\n").unwrap();
 
-    let cfg = mdloom_lib::MdloomConfig::resolve_for(&guide, root);
+    let cfg = proof_lib::ProofConfig::resolve_for(&guide, root);
     assert!(
         !cfg.markdown.enabled,
         "explicit child markdown.enabled=false should disable inherited markdown checks"
@@ -6386,7 +6382,7 @@ enabled = false
 // Multi-file fix plan: fixes across two files both apply correctly
 #[test]
 fn fix_plan_applies_to_multiple_files() {
-    use mdloom_lib::fix::{Confidence, DiagnosticRef, Edit, Fix, FixOptions, FixPlan, PlanSummary};
+    use proof_lib::fix::{Confidence, DiagnosticRef, Edit, Fix, FixOptions, FixPlan, PlanSummary};
 
     let dir = tempfile::tempdir().unwrap();
     let file1 = dir.path().join("a.md");
@@ -6474,7 +6470,7 @@ fn unicode_wide_chars_measured_correctly() {
 
 #[test]
 fn table_link_column_flags_bare_text() {
-    use mdloom_lib::config::{MarkdownTableConfig, TableSchema};
+    use proof_lib::config::{MarkdownTableConfig, TableSchema};
     let content = "## Directories\n\n| Directory | Focus |\n|-----------|-------|\n| computing/ | Tech stack |\n| languages/ | Language guides |\n";
     let check = MarkdownTableCheck {
         config: MarkdownTableConfig {
@@ -6497,7 +6493,7 @@ fn table_link_column_flags_bare_text() {
 
 #[test]
 fn table_link_column_passes_linked_cells() {
-    use mdloom_lib::config::{MarkdownTableConfig, TableSchema};
+    use proof_lib::config::{MarkdownTableConfig, TableSchema};
     let content = "## Directories\n\n| Directory | Focus |\n|-----------|-------|\n| [computing/](../computing/00-OVERVIEW.md) | Tech stack |\n";
     let check = MarkdownTableCheck {
         config: MarkdownTableConfig {
@@ -6519,7 +6515,7 @@ fn table_link_column_passes_linked_cells() {
 
 #[test]
 fn source_document_inline_table_is_flagged() {
-    use mdloom_lib::config::MarkdownTableConfig;
+    use proof_lib::config::MarkdownTableConfig;
     let content = "# Source\n\n| Source | Policy |\n| --- | --- |\n| OCW | derived |\n";
     let check = MarkdownTableCheck {
         config: MarkdownTableConfig::default(),
@@ -6533,7 +6529,7 @@ fn source_document_inline_table_is_flagged() {
 
 #[test]
 fn regular_markdown_inline_table_is_not_source_flagged() {
-    use mdloom_lib::config::MarkdownTableConfig;
+    use proof_lib::config::MarkdownTableConfig;
     let content = "# Source\n\n| Source | Policy |\n| --- | --- |\n| OCW | derived |\n";
     let check = MarkdownTableCheck {
         config: MarkdownTableConfig::default(),
@@ -6547,7 +6543,7 @@ fn regular_markdown_inline_table_is_not_source_flagged() {
 
 #[test]
 fn broken_link_detected_when_file_missing() {
-    use mdloom_lib::config::{MarkdownTableConfig, TableSchema};
+    use proof_lib::config::{MarkdownTableConfig, TableSchema};
     let dir = tempfile::tempdir().unwrap();
     let md_path = dir.path().join("section.md");
 
@@ -6579,7 +6575,7 @@ fn broken_link_detected_when_file_missing() {
 
 #[test]
 fn broken_link_passes_when_target_exists() {
-    use mdloom_lib::config::{MarkdownTableConfig, TableSchema};
+    use proof_lib::config::{MarkdownTableConfig, TableSchema};
     let dir = tempfile::tempdir().unwrap();
     let target_dir = dir.path().join("computing");
     std::fs::create_dir_all(&target_dir).unwrap();
@@ -6617,7 +6613,7 @@ fn broken_link_passes_when_target_exists() {
 
 #[test]
 fn signal_loss_detects_removed_words() {
-    use mdloom_lib::fix::signal_loss;
+    use proof_lib::fix::signal_loss;
     // Annotation removed from line
     let old = "  │  compiles source     │  cc -S / cpp / as";
     let new = "  │  compiles source     │";
@@ -6632,7 +6628,7 @@ fn signal_loss_detects_removed_words() {
 
 #[test]
 fn signal_loss_passes_whitespace_only_change() {
-    use mdloom_lib::fix::signal_loss;
+    use proof_lib::fix::signal_loss;
     let old = "  │  compiles source      │";
     let new = "  │  compiles source       │"; // one more trailing space
     let lost = signal_loss(old, new);
@@ -6644,7 +6640,7 @@ fn signal_loss_passes_whitespace_only_change() {
 
 #[test]
 fn pattern_b_detects_annotation_after_bar() {
-    use mdloom_lib::fix::is_pattern_b;
+    use proof_lib::fix::is_pattern_b;
     assert!(
         is_pattern_b("  │ content │  ← annotation"),
         "annotation after │ is Pattern B"
@@ -6665,9 +6661,9 @@ fn pattern_b_detects_annotation_after_bar() {
 
 #[test]
 fn nested_box_col_fix_only_adjusts_leftmost() {
-    use mdloom_lib::checks::ascii_box::AsciiBoxCheck;
-    use mdloom_lib::checks::Check;
-    use mdloom_lib::config::AsciiBoxConfig;
+    use proof_lib::checks::ascii_box::AsciiBoxCheck;
+    use proof_lib::checks::Check;
+    use proof_lib::config::AsciiBoxConfig;
     // A nested box where inner │ and outer │ are both off by 1
     // The fix should add ONE space at the leftmost misaligned │, cascading the rest
     let content = "```\n┌──────────────────────────────┐\n│  ┌──────────┐  inner text   │\n│  └──────────┘  more text    │\n└──────────────────────────────┘\n```";
@@ -6683,7 +6679,7 @@ fn nested_box_col_fix_only_adjusts_leftmost() {
 // Helper
 // ─────────────────────────────────────────────────────────
 
-fn format_diags(diags: &[mdloom_lib::Diagnostic]) -> String {
+fn format_diags(diags: &[proof_lib::Diagnostic]) -> String {
     diags
         .iter()
         .map(|d| {
@@ -6705,11 +6701,11 @@ fn format_diags(diags: &[mdloom_lib::Diagnostic]) -> String {
 
 #[test]
 fn slide_title_only_compiles_to_correct_dimensions() {
-    use mdloom_lib::compile::compile_file;
-    use mdloom_lib::MdloomConfig;
+    use proof_lib::compile::compile_file;
+    use proof_lib::ProofConfig;
     let src = fixture("slides/title-only.slides.source.md");
     let out = tempfile::NamedTempFile::new().unwrap();
-    let cfg = MdloomConfig::default();
+    let cfg = ProofConfig::default();
     let result = compile_file(&src, out.path(), out.path().parent().unwrap(), &cfg).unwrap();
     assert!(result.written, "slide compile should write output");
     assert!(
@@ -6741,11 +6737,11 @@ fn slide_title_only_compiles_to_correct_dimensions() {
 
 #[test]
 fn slide_two_slide_deck_has_correct_count() {
-    use mdloom_lib::compile::compile_file;
-    use mdloom_lib::MdloomConfig;
+    use proof_lib::compile::compile_file;
+    use proof_lib::ProofConfig;
     let src = fixture("slides/two-slide-deck.slides.source.md");
     let out = tempfile::NamedTempFile::new().unwrap();
-    let cfg = MdloomConfig::default();
+    let cfg = ProofConfig::default();
     let result = compile_file(&src, out.path(), out.path().parent().unwrap(), &cfg).unwrap();
     assert!(result.written);
     let content = std::fs::read_to_string(out.path()).unwrap();
@@ -6756,11 +6752,11 @@ fn slide_two_slide_deck_has_correct_count() {
 
 #[test]
 fn slide_title_content_with_bullets() {
-    use mdloom_lib::compile::compile_file;
-    use mdloom_lib::MdloomConfig;
+    use proof_lib::compile::compile_file;
+    use proof_lib::ProofConfig;
     let src = fixture("slides/title-content.slides.source.md");
     let out = tempfile::NamedTempFile::new().unwrap();
-    let cfg = MdloomConfig::default();
+    let cfg = ProofConfig::default();
     let result = compile_file(&src, out.path(), out.path().parent().unwrap(), &cfg).unwrap();
     assert!(result.written);
     let content = std::fs::read_to_string(out.path()).unwrap();
@@ -6781,18 +6777,18 @@ fn slide_title_content_with_bullets() {
 
 #[test]
 fn dashboard_two_region_compiles_correctly() {
-    use mdloom_lib::compile::compile_file;
-    use mdloom_lib::MdloomConfig;
+    use proof_lib::compile::compile_file;
+    use proof_lib::ProofConfig;
     let src = fixture("dashboards/two-region.dashboard.source.md");
     let out = tempfile::NamedTempFile::new().unwrap();
-    let cfg = MdloomConfig::default();
+    let cfg = ProofConfig::default();
     let result = compile_file(&src, out.path(), out.path().parent().unwrap(), &cfg).unwrap();
     assert!(result.written, "dashboard compile should write output");
     assert!(
         result
             .violations
             .iter()
-            .all(|v| v.severity != mdloom_lib::compile::ViolationSeverity::Error),
+            .all(|v| v.severity != proof_lib::compile::ViolationSeverity::Error),
         "no error violations"
     );
     let content = std::fs::read_to_string(out.path()).unwrap();
@@ -6824,7 +6820,7 @@ fn dashboard_two_region_compiles_correctly() {
 
 #[test]
 fn render_slide_dispatch_all_layouts_produce_correct_dimensions() {
-    use mdloom_lib::slide::{render_slide, Slide, SlideLayout, SlideMeta};
+    use proof_lib::slide::{render_slide, Slide, SlideLayout, SlideMeta};
     let meta = SlideMeta {
         width: 40,
         height: 8,
@@ -6874,8 +6870,8 @@ fn render_slide_dispatch_all_layouts_produce_correct_dimensions() {
 
 #[test]
 fn render_body_lines_multi_directive_dispatch() {
-    use mdloom_lib::slide::layout::render_body_lines;
-    let body = "mdloom:divider\nmdloom:bullets\n- item A\n- item B\nmdloom:divider style=double\n";
+    use proof_lib::slide::layout::render_body_lines;
+    let body = "proof:divider\nproof:bullets\n- item A\n- item B\nproof:divider style=double\n";
     let lines = render_body_lines(body, 40);
     let flat = lines.join("\n");
     // divider produces ── line
@@ -6889,10 +6885,10 @@ fn render_body_lines_multi_directive_dispatch() {
 
 #[test]
 fn slide_notes_not_in_default_output() {
-    use mdloom_lib::slide::layout::render_body_lines;
-    // mdloom:notes content must be excluded (SL-5)
+    use proof_lib::slide::layout::render_body_lines;
+    // proof:notes content must be excluded (SL-5)
     let body =
-        "visible line\nmdloom:notes\nthis is a speaker note\nsecond note line\n\nback to body\n";
+        "visible line\nproof:notes\nthis is a speaker note\nsecond note line\n\nback to body\n";
     let lines = render_body_lines(body, 40);
     let flat = lines.join("\n");
     assert!(
@@ -6907,17 +6903,17 @@ fn slide_notes_not_in_default_output() {
 }
 
 #[test]
-fn notes_guard_does_not_match_prose_containing_mdloom_notes() {
-    use mdloom_lib::slide::layout::render_body_lines;
-    // "mdloom:notes are important" should NOT trigger the notes skip
-    let body = "mdloom:notes are important for speakers\nvisible content\n";
+fn notes_guard_does_not_match_prose_containing_proof_notes() {
+    use proof_lib::slide::layout::render_body_lines;
+    // "proof:notes are important" should NOT trigger the notes skip
+    let body = "proof:notes are important for speakers\nvisible content\n";
     let lines = render_body_lines(body, 40);
     let flat = lines.join("\n");
-    // The first line starts with "mdloom:notes" but has extra content —
+    // The first line starts with "proof:notes" but has extra content —
     // it should NOT be treated as a notes block
     assert!(
         flat.contains("important"),
-        "prose starting with mdloom:notes should NOT be skipped"
+        "prose starting with proof:notes should NOT be skipped"
     );
 }
 
@@ -6927,7 +6923,7 @@ fn notes_guard_does_not_match_prose_containing_mdloom_notes() {
 
 #[test]
 fn dashboard_overlapping_regions_produce_error() {
-    use mdloom_lib::dashboard::region::{validate_regions, RegionGeometry};
+    use proof_lib::dashboard::region::{validate_regions, RegionGeometry};
     let regions = vec![
         RegionGeometry {
             name: "a".into(),
@@ -6953,7 +6949,7 @@ fn dashboard_overlapping_regions_produce_error() {
 
 #[test]
 fn dashboard_adjacent_regions_do_not_overlap() {
-    use mdloom_lib::dashboard::region::{validate_regions, RegionGeometry};
+    use proof_lib::dashboard::region::{validate_regions, RegionGeometry};
     let regions = vec![
         RegionGeometry {
             name: "left".into(),
@@ -6984,7 +6980,7 @@ fn dashboard_adjacent_regions_do_not_overlap() {
 
 #[test]
 fn symbol_expand_in_compiled_prose() {
-    use mdloom_lib::symbol::{expand_symbols, SymbolLibrary};
+    use proof_lib::symbol::{expand_symbols, SymbolLibrary};
     let lib = SymbolLibrary::new();
     let (out, warns) = expand_symbols("Status: [sym:checkmark] all good", &lib);
     assert_eq!(out, "Status: ✓ all good");
@@ -6993,7 +6989,7 @@ fn symbol_expand_in_compiled_prose() {
 
 #[test]
 fn symbol_resolve_case_insensitive() {
-    use mdloom_lib::symbol::{resolve, SymbolLibrary};
+    use proof_lib::symbol::{resolve, SymbolLibrary};
     let lib = SymbolLibrary::new();
     assert!(resolve("STAR", &lib).is_some(), "uppercase should resolve");
     assert!(resolve("Star", &lib).is_some(), "mixed case should resolve");

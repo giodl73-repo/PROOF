@@ -73,7 +73,7 @@ pub mod symbol;
 pub mod tree;
 pub mod unused;
 
-pub use config::MdloomConfig;
+pub use config::ProofConfig;
 pub use diagnostic::{Diagnostic, RichContext, Severity};
 pub use diagnostic_registry::{lookup as lookup_diagnostic_code, DiagnosticCode, DIAGNOSTIC_CODES};
 pub use fix::{Confidence, Edit, Fix, FixOptions, FixPlan, FixResult};

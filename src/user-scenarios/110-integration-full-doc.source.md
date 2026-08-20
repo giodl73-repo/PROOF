@@ -8,7 +8,7 @@ document, the way a real authoring workflow would.
 The bias-variance tradeoff governs the relationship between model capacity
 and generalization. The expected error decomposes:
 
-```mdloom:math
+```proof:math
 \text{Error} = \text{Bias}^2 + \text{Variance} + \sigma^2
 ```
 
@@ -16,12 +16,12 @@ and generalization. The expected error decomposes:
 
 Validation loss across our four candidate models:
 
-```mdloom:chart kind=bar width=50 label-field=model value-field=delta source=md://src/user-scenarios/data/models.md#:table:0
+```proof:chart kind=bar width=50 label-field=model value-field=delta source=md://src/user-scenarios/data/models.md#:table:0
 ```
 
 ## Tradeoff hierarchy
 
-```mdloom:tree kind=taxonomy
+```proof:tree kind=taxonomy
 root: Tradeoffs
 - Capacity
   - Model size
@@ -37,11 +37,11 @@ root: Tradeoffs
 
 ## Models in scope
 
-```mdloom:table
+```proof:table
 md://src/user-scenarios/data/models.md#:table:0
 ```
 
 ## See also
 
-```mdloom:xref uri=md://docs/guides/01-math.md
+```proof:xref uri=md://docs/guides/01-math.md
 ```

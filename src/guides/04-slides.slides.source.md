@@ -4,49 +4,49 @@ height: 24
 theme: minimal
 ---
 
-```mdloom:slide layout=title
-title: "mdloom Slides"
-subtitle: "ASCII presentations with mdloom:slide"
-author: "mdloom guide"
+```proof:slide layout=title
+title: "proof Slides"
+subtitle: "ASCII presentations with proof:slide"
+author: "proof guide"
 date: "2026"
 ```
 
 ---
 
-```mdloom:slide layout=section
+```proof:slide layout=section
 title: "Slide Layouts"
 subtitle: "Seven built-in layouts"
 ```
 
 ---
 
-```mdloom:slide layout=agenda
+```proof:slide layout=agenda
 title: "Agenda"
 ```
 
 ---
 
-```mdloom:slide layout=title-content
+```proof:slide layout=title-content
 title: "title-content"
 ---
 The most common layout. One title zone at the top,
-one body zone below. The body accepts any mdloom: directives.
+one body zone below. The body accepts any proof: directives.
 
-mdloom:bullets
+proof:bullets
 - Clean separation between title and content
-- Body supports mdloom:bullets, mdloom:callout, mdloom:divider
+- Body supports proof:bullets, proof:callout, proof:divider
 - Inline $\alpha$, $\beta$ math works in body text
 - [sym:checkmark] Symbol expansion works too
 ```
 
 ---
 
-```mdloom:slide layout=two-column ratio=50:50
+```proof:slide layout=two-column ratio=50:50
 title: "two-column"
 ---
 LEFT COLUMN
 
-mdloom:bullets
+proof:bullets
 - Left zone content
 - Use for comparisons
 - Or before/after
@@ -55,7 +55,7 @@ mdloom:bullets
 
 RIGHT COLUMN
 
-mdloom:bullets
+proof:bullets
 - Right zone content
 - Same height as left
 - Ratio is configurable
@@ -63,7 +63,7 @@ mdloom:bullets
 
 ---
 
-```mdloom:slide layout=title-content
+```proof:slide layout=title-content
 title: "agenda — auto-generated from sections"
 ---
 The agenda layout scans the deck for every layout=section slide
@@ -71,8 +71,8 @@ and renders their titles as a numbered list. No body content needed:
 the bullets come from the deck itself, so reordering or renaming
 sections updates the agenda automatically.
 
-mdloom:bullets
-- Drop ```mdloom:slide layout=agenda``` anywhere — typically right after the title
+proof:bullets
+- Drop ```proof:slide layout=agenda``` anywhere — typically right after the title
 - Title defaults to "Agenda" when the front-matter omits one
 - Section slides keep their normal centered rendering
 - Empty deck shows "(no section slides in this deck)"
@@ -80,17 +80,17 @@ mdloom:bullets
 
 ---
 
-```mdloom:slide layout=section
+```proof:slide layout=section
 title: "Body Directives"
-subtitle: "mdloom:bullets · mdloom:callout · mdloom:divider · mdloom:quote"
+subtitle: "proof:bullets · proof:callout · proof:divider · proof:quote"
 ```
 
 ---
 
-```mdloom:slide layout=title-content
-title: "mdloom:bullets"
+```proof:slide layout=title-content
+title: "proof:bullets"
 ---
-mdloom:bullets
+proof:bullets
 - First level bullet
   - Nested level two
     - Level three nesting
@@ -102,57 +102,57 @@ mdloom:bullets
 
 ---
 
-```mdloom:slide layout=title-content
-title: "mdloom:callout"
+```proof:slide layout=title-content
+title: "proof:callout"
 ---
-mdloom:callout style=info
+proof:callout style=info
 This is an info callout. Use for tips, notes, and asides.
 The callout box is drawn with rounded corners.
 
-mdloom:callout style=warning
+proof:callout style=warning
 This is a warning callout. Use for cautions and gotchas.
 
-mdloom:callout style=error
+proof:callout style=error
 This is an error callout. Use for critical information.
 ```
 
 ---
 
-```mdloom:slide layout=title-content
-title: "mdloom:divider and mdloom:quote"
+```proof:slide layout=title-content
+title: "proof:divider and proof:quote"
 ---
-mdloom:divider style=thin
+proof:divider style=thin
 
-mdloom:quote attribution="Donald Knuth"
+proof:quote attribution="Donald Knuth"
 Premature optimization is the root of all evil.
 
-mdloom:divider style=thick
+proof:divider style=thick
 
-mdloom:centered
+proof:centered
 Centered text is centered.
 ```
 
 ---
 
-```mdloom:slide layout=stats
-title: "mdloom:stats — KPI Slide"
+```proof:slide layout=stats
+title: "proof:stats — KPI Slide"
 ---
-mdloom:stat label="Tests" value="626" delta="+147"
-mdloom:stat label="Modules" value="17" delta="+1"
-mdloom:stat label="LOC" value="~8,000" delta=""
-mdloom:stat label="Coverage" value="high" delta=""
+proof:stat label="Tests" value="626" delta="+147"
+proof:stat label="Modules" value="17" delta="+1"
+proof:stat label="LOC" value="~8,000" delta=""
+proof:stat label="Coverage" value="high" delta=""
 ```
 
 ---
 
-```mdloom:slide layout=section
+```proof:slide layout=section
 title: "Math in Slides"
 subtitle: "Inline $...$ expansion in all text zones"
 ```
 
 ---
 
-```mdloom:slide layout=title-content
+```proof:slide layout=title-content
 title: "Inline Math"
 ---
 Inline math works everywhere in slide body:
@@ -165,19 +165,19 @@ $\forall \epsilon > 0, \exists \delta > 0$ — Logic symbols.
 
 $\nabla \times B = \mu_0 J$ — Maxwell's equation.
 
-mdloom:divider style=thin
+proof:divider style=thin
 
-For multi-line math, use mdloom:math in a separate document.
+For multi-line math, use proof:math in a separate document.
 ```
 
 ---
 
-```mdloom:slide layout=blank
+```proof:slide layout=blank
 title: ""
 ---
       ╔═══════════════════════════════════════════╗
       ║                                           ║
-      ║   mdloom:slide layout=blank                ║
+      ║   proof:slide layout=blank                ║
       ║                                           ║
       ║   The blank layout gives you a full       ║
       ║   canvas — no chrome, no header.          ║
@@ -188,19 +188,19 @@ title: ""
 
 ---
 
-```mdloom:slide layout=title
+```proof:slide layout=title
 title: "Slide Attributes"
 subtitle: "width · height · theme · show-numbers"
 ```
 
 ---
 
-```mdloom:slide layout=title-content
-title: "mdloom.toml for Slides"
+```proof:slide layout=title-content
+title: "proof.toml for Slides"
 ---
-Configure slide defaults in mdloom.toml:
+Configure slide defaults in proof.toml:
 
-mdloom:bullets
+proof:bullets
 - width: output width in characters (default: 120)
 - height: output height in lines (default: 34)
 - theme: minimal | box | none
@@ -208,61 +208,61 @@ mdloom:bullets
 
 Per-slide overrides go in the fence header:
 
-```mdloom:slide layout=title width=60 height=15 theme=box
+```proof:slide layout=title width=60 height=15 theme=box
 title: "Narrow slide"
 ```
 ```
 
 ---
 
-```mdloom:slide layout=section
+```proof:slide layout=section
 title: "New Directives"
-subtitle: "mdloom:right · mdloom:numbered-list · mdloom:toc · word-wrap"
+subtitle: "proof:right · proof:numbered-list · proof:toc · word-wrap"
 ```
 
 ---
 
-```mdloom:slide layout=title-content
-title: "mdloom:right — Right-align text"
+```proof:slide layout=title-content
+title: "proof:right — Right-align text"
 ---
-Mirror of mdloom:centered: each line is padded with leading spaces so it
+Mirror of proof:centered: each line is padded with leading spaces so it
 ends at the slide width. Reach for it when content visually belongs at
 the right margin — author bylines, dates, page numbers, citations
 under a quote, or a stat that anchors the eye to the trailing edge.
-Stack with mdloom:centered or left-flush prose to build a balanced
+Stack with proof:centered or left-flush prose to build a balanced
 header or footer band without dropping into a two-column layout.
 
-mdloom:right
+proof:right
 Author: Gio Della-Libera
 Date: 2026-04-28
 ```
 
 ---
 
-```mdloom:slide layout=title-content
-title: "mdloom:numbered-list — Ordered (numbered) list"
+```proof:slide layout=title-content
+title: "proof:numbered-list — Ordered (numbered) list"
 ---
-Use mdloom:numbered-list (short-form: mdloom:ol) when sequence matters —
+Use proof:numbered-list (short-form: proof:ol) when sequence matters —
 install steps, runbook procedures, ranked priorities, anything the
 reader is meant to follow in order. Indented children get decimal
 sub-numbering (1.1, 1.2, 2.1) so cross-references stay stable as the
-list grows. Reach for mdloom:bullets instead when the items are peers
-with no implied order; switching to mdloom:numbered-list is the
+list grows. Reach for proof:bullets instead when the items are peers
+with no implied order; switching to proof:numbered-list is the
 cheapest way to signal "do these in this sequence."
 
-mdloom:numbered-list
-- Install mdloom
+proof:numbered-list
+- Install proof
   - Clone the repo
   - Run cargo build
-- Configure mdloom.toml
+- Configure proof.toml
   - Set source_dir and output_dir
-- Run mdloom compile
+- Run proof compile
 ```
 
 ---
 
-```mdloom:slide layout=title-content
-title: "mdloom:toc — Table of Contents"
+```proof:slide layout=title-content
+title: "proof:toc — Table of Contents"
 ---
 Lift a navigation slide straight from the heading structure of any
 markdown source — the current deck or any md:// reference. Use it as
@@ -275,7 +275,7 @@ to scope the TOC to one subsection — only the descendants of that
 heading appear, perfect for a per-section mini-TOC at the top of a
 long chapter.
 
-mdloom:bullets
+proof:bullets
 - style=list: - heading bullet list
 - style=tree: └── tree connectors
 - style=numbered: 1. decimal numbering
@@ -284,7 +284,7 @@ mdloom:bullets
 
 ---
 
-```mdloom:slide layout=title-content
+```proof:slide layout=title-content
 title: "Word wrap"
 ---
 Long sentences used to fall off the right edge — the renderer now
@@ -294,14 +294,14 @@ to the available width inside any layout zone (full body, two-column
 half, callout). Write naturally; reach for explicit line breaks only
 when you want them.
 
-mdloom:bullets
+proof:bullets
 - Short bullet
 - This is a longer bullet that will wrap onto the next line if it exceeds the slide width, keeping the hanging indent aligned
 ```
 
 ---
 
-```mdloom:slide layout=title
+```proof:slide layout=title
 title: "End"
 subtitle: "See also: elements.md · math.md · dashboard.md"
 ```

@@ -490,12 +490,12 @@ mod tests {
     {
       "source": "guide.source.md",
       "keys": ["status", "tags", "title"],
-      "fields": { "status": "ready", "tags": "[mdloom, guide]", "title": "Guide" }
+      "fields": { "status": "ready", "tags": "[proof, guide]", "title": "Guide" }
     },
     {
       "source": "draft.source.md",
       "keys": ["status", "tags", "title"],
-      "fields": { "status": "draft", "tags": "[mdloom]", "title": "Draft" }
+      "fields": { "status": "draft", "tags": "[proof]", "title": "Draft" }
     }
   ]
 }"#,
@@ -585,7 +585,7 @@ mod tests {
         let table =
             render_frontmatter_inventory(&frontmatter_inventory(), &filter, "table").unwrap();
         assert!(table.contains("| Source | tags |"));
-        assert!(table.contains("| [guide.source.md](guide.source.md) | `[mdloom, guide]` |"));
+        assert!(table.contains("| [guide.source.md](guide.source.md) | `[proof, guide]` |"));
 
         let eq_filter = FrontmatterFilter {
             field: Some("status".to_string()),
