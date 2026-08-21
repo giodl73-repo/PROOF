@@ -17,6 +17,8 @@ files.
 
 **Test:** Resolve the same URI 100 times against the same content, assert all results are identical.
 
+**Status:** OPEN
+
 ---
 
 ## I-2: Named over numeric — proof never emits a numeric URI when a name exists
@@ -32,6 +34,8 @@ mechanism.
 **Test:** Pin a labeled figure → emitted URI contains the label. Pin an unlabeled
 figure → emitted URI contains `:N`. Add label later → `proof pin --update` emits named form.
 
+**Status:** OPEN
+
 ---
 
 ## I-3: Section uniqueness — ambiguous heading path is always an error
@@ -44,6 +48,8 @@ never silently picks one.
 the wrong DaVinci invariant is enforced. Failing loudly is safer.
 
 **Test:** File with two `## Overview` sections → any URI with `#overview` errors.
+
+**Status:** OPEN
 
 ---
 
@@ -58,6 +64,8 @@ all numeric URIs from other tools.
 
 **Test:** Resolve `:0` on a section with 3 figures — always returns the first one (line N).
 
+**Status:** OPEN
+
 ---
 
 ## I-5: Percent-encoding is symmetric
@@ -71,6 +79,8 @@ DaVinci entries, fix plans, and error output to remain valid across sessions.
 
 **Test:** Generate URIs for elements with special chars in labels, encode them,
 parse them, resolve them — must return same element as the unencoded form.
+
+**Status:** OPEN
 
 ---
 
@@ -87,6 +97,8 @@ URIs depending on when/how it's resolved. The URI must be stable.
 **Test:** Figure with BOTH an inline label AND a preceding bold label → rule 1
 wins, URI uses inline label, preceding label is ignored.
 
+**Status:** OPEN
+
 ---
 
 ## I-7: Resolution is read-only
@@ -99,6 +111,8 @@ pure read operation against the filesystem.
 — the resolver takes `&Path`, not `&mut Path`.
 
 **Test:** Verify no files are modified after resolving any URI against any fixture.
+
+**Status:** OPEN
 
 ---
 
@@ -115,6 +129,8 @@ of where proof is invoked from.
 **Test:** Run `proof resolve md://computing/01-PACKAGE.md#...` from C:\, C:\src,
 and C:\src\maxim — all return the same result when --config points to same root.
 
+**Status:** OPEN
+
 ---
 
 ## I-9: Label pure-digit restriction
@@ -129,6 +145,8 @@ an integer.
 
 **Test:** Code block with inline label "0" → no label detected, numeric fallback used.
 Code block with inline label "0-start" → label registered (contains non-digit).
+
+**Status:** OPEN
 
 ---
 
@@ -152,6 +170,8 @@ not discovered at runtime.
 **Test:** `md://file.md#section:text:0[row=X]` → `md_invalid_subkey` error.
 `md://file.md#section:heading[box=Y]` → `md_invalid_subkey` error.
 
+**Status:** OPEN
+
 ---
 
 ## I-11: Query parameters apply only to collection types
@@ -168,6 +188,8 @@ behavior.
 **Test:** `md://file.md#section:figure:0?filter=X eq Y` → `md_invalid_query_on_type`.
 `md://file.md#section:figure?count` → integer count of figures.
 
+**Status:** OPEN
+
 ---
 
 ## I-12: Consistency group members resolve independently
@@ -181,3 +203,5 @@ a consistency failure could be reported for the wrong element.
 
 **Test:** Consistency group with 3 URIs where member 2 has a box-width mismatch —
 members 1 and 3 must still resolve correctly before the comparison rule fires.
+
+**Status:** OPEN

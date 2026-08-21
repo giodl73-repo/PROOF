@@ -141,6 +141,9 @@ is malformed.
 - Exit code 1 → at least one error-severity diagnostic
 - `--no-fail` → always exit 0 regardless
 
+**Why it matters:** Scripts and CI use the exit status as the machine-readable
+summary of whether enforcement failed.
+
 **Test:** `tests/integration_tests.rs::binary_exits_zero_on_clean_file`
          `tests/integration_tests.rs::binary_exits_nonzero_on_errors`
 
