@@ -2,6 +2,8 @@ use anyhow::Result;
 use colored::Colorize;
 use std::path::PathBuf;
 
+use crate::mdpath_warnings::numeric_uri_stale_warning;
+
 #[derive(clap::Args)]
 pub(crate) struct Args {
     /// The md:// URI to pin
@@ -42,6 +44,14 @@ pub(crate) fn run(args: Args) -> Result<()> {
     let parsed = mdpath::parse(&uri).map_err(|e| anyhow::anyhow!("invalid md:// URI: {}", e))?;
     let element = mdpath::resolve(&parsed, &root)
         .map_err(|e| anyhow::anyhow!("cannot resolve URI: {}", e))?;
+    if let Some(warning) = numeric_uri_stale_warning(&parsed, &element) {
+        anyhow::bail!(
+            "{}: {}; rerun with {}",
+            warning.code,
+            warning.message,
+            warning.named_uri
+        );
+    }
 
     let stable_uri = element.uri.clone();
 

@@ -298,6 +298,18 @@ pub const DIAGNOSTIC_CODES: &[DiagnosticCode] = &[
         description: "Heading marker has no heading text.",
     },
     DiagnosticCode {
+        code: "custom_rule",
+        default_severity: Severity::Warning,
+        family: "custom_rules",
+        description: "A configured custom rule matched its warn_when condition.",
+    },
+    DiagnosticCode {
+        code: "custom_rule_invalid_regex",
+        default_severity: Severity::Error,
+        family: "custom_rules",
+        description: "A configured custom rule regex could not compile.",
+    },
+    DiagnosticCode {
         code: "md_file_length",
         default_severity: Severity::Warning,
         family: "markdown",
@@ -326,6 +338,13 @@ pub const DIAGNOSTIC_CODES: &[DiagnosticCode] = &[
         default_severity: Severity::Warning,
         family: "markdown",
         description: "Heading levels skip one or more levels.",
+    },
+    DiagnosticCode {
+        code: "md_numeric_uri_stale",
+        default_severity: Severity::Warning,
+        family: "source_links",
+        description:
+            "Numeric md:// URI selector is stale because a stable named selector is available.",
     },
     DiagnosticCode {
         code: "md_missing_pattern",

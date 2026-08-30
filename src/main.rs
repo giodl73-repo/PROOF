@@ -38,6 +38,7 @@ mod cmd_stats;
 mod cmd_status;
 mod cmd_tree;
 mod dispatch;
+mod mdpath_warnings;
 
 use cli::Cli;
 

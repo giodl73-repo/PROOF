@@ -579,7 +579,11 @@ pub struct CustomRule {
     pub name: String,
     pub description: String,
     pub pattern: String,
-    /// Warn when pattern IS found (inverse match)
+    /// Explicit rule trigger. Prefer this over `negate`.
+    #[serde(default)]
+    pub warn_when: Option<CustomRuleWarnWhen>,
+    /// Deprecated compatibility field. `true` means warn when pattern is found;
+    /// `false` means warn when pattern is missing.
     #[serde(default)]
     pub negate: bool,
     #[serde(default = "default_custom_severity")]
@@ -587,6 +591,23 @@ pub struct CustomRule {
     /// Restrict to files matching these globs
     #[serde(default)]
     pub only_in: Vec<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum CustomRuleWarnWhen {
+    Found,
+    Missing,
+}
+
+impl CustomRule {
+    pub fn warn_when(&self) -> CustomRuleWarnWhen {
+        self.warn_when.unwrap_or(if self.negate {
+            CustomRuleWarnWhen::Found
+        } else {
+            CustomRuleWarnWhen::Missing
+        })
+    }
 }
 
 fn bool_true() -> bool {

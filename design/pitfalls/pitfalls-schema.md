@@ -1,4 +1,4 @@
-# Schema & Config Pitfalls (SC-01..SC-03)
+# Schema & Config Pitfalls (SC-01..SC-05)
 
 Failure modes in the schema loading, config composition, and rule interpretation layer.
 
@@ -11,6 +11,10 @@ config, the user gets no feedback. They believe their `proof.toml` is being appl
 (wrong file name, wrong directory, typo). All checks run with default settings, not schema settings.
 
 **Domain:** CI pipelines and pre-commit hooks where the config path is assumed correct.
+
+**Why it's hard to catch:** Defaults are valid, so the command still produces
+normal diagnostics. Unless the user sees an explicit config-loading note, they
+cannot distinguish "clean under my schema" from "checked under defaults."
 
 **Structural solution:** Add a `--config` flag that is required-or-explicit. When `--config` is
 given but the file doesn't exist, fail immediately with a clear error. When auto-detection is used
@@ -31,6 +35,10 @@ diagnostics — silently.
 
 **Domain:** Integration scenarios where `proof` is invoked from a different working directory
 than the project root.
+
+**Why it's hard to catch:** Zero matched files can look like a clean run in
+automation. The bug depends on invocation directory and path shape, so tests
+that run from the repo root do not exercise the failing base-directory route.
 
 **Structural solution:** Always strip the root prefix before globbing: `path.strip_prefix(root)`.
 Add a `--verbose` flag that logs `"checked N files"` — if N=0, the user knows something is wrong
@@ -54,6 +62,10 @@ The section schema applies to the overview file when it should be excluded.
 **Domain:** Any directory-level `proof.toml` that uses `paths_exclude` to carve out special
 files from a generic `paths = ["*.md"]` rule.
 
+**Why it's hard to catch:** Include and exclude globs are both syntactically
+valid, and the included file still receives diagnostics. The error only appears
+when a directory-local rule relies on exclusion to protect a special file.
+
 **Structural solution:** The prefix loop must iterate over both `schema.paths` and
 `schema.paths_exclude` and apply the same prefix transform to both. A single closure
 `prefix_glob` applied to both fields ensures they stay in sync.
@@ -74,6 +86,10 @@ flip from "warn when absent" to "warn when present."
 
 **Domain:** Schema authors unfamiliar with lint-rule inversion terminology.
 
+**Why it's hard to catch:** Both inverted and non-inverted rules execute and
+emit plausible diagnostics. A user trying to disable a rule can accidentally
+change when it fires without creating a parse or validation error.
+
 **Structural solution:** Rename the field to make the semantics explicit. Options:
 - `match_mode = "present" | "absent"` — warn when pattern is present vs. absent
 - `warn_when = "found" | "missing"` — direct statement of when to warn
@@ -81,5 +97,39 @@ flip from "warn when absent" to "warn when present."
 Until the rename, the schema file comment must be very explicit with an example showing
 both states.
 
-**Status:** OPEN — `negate` field kept for now; schema comment documents the behavior.
-**Test:** Not yet written — pending field rename decision.
+**Status:** SOLVED — custom rules now support explicit
+`warn_when = "found" | "missing"` semantics, legacy `negate = true` remains a
+backward-compatible alias for `warn_when = "found"`, and the runner actually
+executes configured custom rules.
+**Test:** `tests/integration_tests.rs` —
+`custom_rule_warn_when_found_reports_matching_content`,
+`custom_rule_warn_when_missing_reports_absent_content`,
+`custom_rule_legacy_negate_true_warns_when_found`
+
+---
+
+## SC-05: Generated output becomes the edited source
+
+**Pattern:** A user opens a compiled `.md`, generated `.source.md` candidate,
+TOC, tree, diagram, status report, or backfill artifact and treats the easiest
+visible file as the correct place to edit. The next `proof compile`, `proof
+backfill`, generated index refresh, or source migration overwrites the change
+or silently splits source truth across generated and hand-authored files.
+
+**Domain:** `.source.md` adoption, `proof backfill`, generated guide output,
+TOCs, tree diagrams, `md://` cross-references, DaVinci pins, publisher reports,
+and MAXIM-style corpus migrations.
+
+**Detection difficulty:** The generated artifact is usually more readable than
+the source contract, and existing docs correctly explain the source-output model
+but do not make every generated surface self-describing.
+
+**Structural solution:** Every generated or derived surface should expose its
+source path, derived status, safe edit path, and repair command. Backfill and
+compile guides should include a user-task fixture that starts from a visible
+generated artifact and leads the user back to the authoritative source.
+
+**Status:** OPEN
+**Evidence:** `README.md`, `docs/guides/00-getting-started.md`,
+`docs/guides/14-backfill-migration.md`, and
+`docs/adoption/reuse-boundary.md`.

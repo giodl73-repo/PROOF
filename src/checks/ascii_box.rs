@@ -169,6 +169,10 @@ fn visual_width(s: &str) -> usize {
     visual_width_tab(s, 4)
 }
 
+fn structural_visual_width(s: &str) -> usize {
+    visual_width(s.trim_end_matches([' ', '\t']))
+}
+
 /// True if char is a box-drawing top/bottom border fill char.
 fn is_border_fill(c: char) -> bool {
     matches!(c, '-' | '─' | '=' | '━')
@@ -383,7 +387,7 @@ fn find_boxes(lines: &[&str]) -> Vec<BoxRegion> {
                 &mut expected_cols,
                 i.checked_sub(1).map(|idx| lines[idx]),
             );
-            let top_width = visual_width(lines[i]);
+            let top_width = structural_visual_width(lines[i]);
             let top_line = i;
 
             // Scan forward for the matching bottom border.
@@ -457,7 +461,7 @@ fn check_boxes(
         };
 
         // Check bottom border width matches top (applying same tolerance as content rows)
-        let bottom_width = visual_width(lines[b.bottom_line]);
+        let bottom_width = structural_visual_width(lines[b.bottom_line]);
         if bottom_width.abs_diff(b.top_width) > config.tolerance {
             let ctx = box_context(abs_bottom, junction_columns(lines[b.bottom_line]));
             diags.push(
@@ -492,7 +496,7 @@ fn check_boxes(
                 continue;
             }
 
-            let row_width = visual_width(line);
+            let row_width = structural_visual_width(line);
 
             // Width check
             if row_width != b.top_width {
