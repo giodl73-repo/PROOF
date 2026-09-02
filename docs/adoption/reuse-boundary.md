@@ -29,6 +29,10 @@ baselines, generated-artifact admission, publication policy, and deployment.
 MDPATH owns stable `md://` addressing. MDPORT owns portable transfer semantics.
 PROOF owns compilation, validation, rendering, diagnostics, and artifact
 production.
+Backfill-generated `.source.md` candidates remain unreviewed generated
+artifacts until the consuming repo promotes them; use their `proof_original`,
+`proof_safe_edit_path`, and `proof_repair_command` fields to repair stale
+visible output without splitting source truth.
 
 ## Compatibility and lifecycle
 

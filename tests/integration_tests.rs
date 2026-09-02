@@ -69,7 +69,7 @@ fn width_mismatch_detected_in_fixture() {
     );
     let codes: Vec<_> = errors.iter().map(|d| d.code).collect();
     assert!(
-        codes.iter().any(|&c| c == "ascii_box_width"),
+        codes.contains(&"ascii_box_width"),
         "expected ascii_box_width error, got codes: {:?}",
         codes
     );
@@ -1704,6 +1704,7 @@ fn binary_status_mdcrop_rejects_dir_with_view() {
 
 #[test]
 fn binary_backfill_literal_generates_source_and_report() {
+    // Regression for SC-05 and I-16: generated source candidates must name their safe edit path.
     let bin = debug_bin();
     if !bin.exists() {
         return;
@@ -1744,7 +1745,22 @@ fn binary_backfill_literal_generates_source_and_report() {
         generated_text
     );
     assert!(
+        generated_text.contains("proof_generated_status: generated_candidate"),
+        "got:\n{}",
+        generated_text
+    );
+    assert!(
+        generated_text.contains("proof_safe_edit_path: \"edit guide.md or promote"),
+        "got:\n{}",
+        generated_text
+    );
+    assert!(
         generated_text.contains("proof_original: \"guide.md\""),
+        "got:\n{}",
+        generated_text
+    );
+    assert!(
+        generated_text.contains("proof_repair_command: \"proof backfill guide.md --output-source"),
         "got:\n{}",
         generated_text
     );
@@ -1758,6 +1774,18 @@ fn binary_backfill_literal_generates_source_and_report() {
         serde_json::from_str(&std::fs::read_to_string(&report_path).unwrap()).unwrap();
     assert_eq!(report["summary"]["files_generated"], 1);
     assert_eq!(report["summary"]["roundtrip_passed"], 1);
+    assert_eq!(
+        report["files"][0]["generated_status"],
+        "generated_candidate"
+    );
+    assert!(report["files"][0]["safe_edit_path"]
+        .as_str()
+        .unwrap()
+        .contains("edit guide.md or promote"));
+    assert!(report["files"][0]["repair_command"]
+        .as_str()
+        .unwrap()
+        .contains("proof backfill guide.md --output-source"));
     assert_eq!(report["files"][0]["classification"], "literal_markdown");
     assert_eq!(report["files"][0]["blocks"]["markdown_tables"], 1);
     assert_eq!(report["summary"]["blocks"]["markdown_tables"], 1);
@@ -6457,18 +6485,22 @@ fn config_merge_files_exclude_is_additive() {
     use proof_lib::config::{merge, FilesConfig};
     use proof_lib::ProofConfig;
 
-    let mut parent = ProofConfig::default();
-    parent.files = FilesConfig {
-        include: vec!["**/*.md".to_string()],
-        exclude: vec!["_archive/**".to_string()],
-        root: false,
+    let parent = ProofConfig {
+        files: FilesConfig {
+            include: vec!["**/*.md".to_string()],
+            exclude: vec!["_archive/**".to_string()],
+            root: false,
+        },
+        ..Default::default()
     };
 
-    let mut child = ProofConfig::default();
-    child.files = FilesConfig {
-        include: vec!["**/*.md".to_string()],
-        exclude: vec!["drafts/**".to_string()], // child adds its own exclusion
-        root: false,
+    let child = ProofConfig {
+        files: FilesConfig {
+            include: vec!["**/*.md".to_string()],
+            exclude: vec!["drafts/**".to_string()], // child adds its own exclusion
+            root: false,
+        },
+        ..Default::default()
     };
 
     let merged = merge(parent, child);
@@ -6489,11 +6521,13 @@ fn config_merge_default_child_include_preserves_parent_include() {
     use proof_lib::config::{merge, FilesConfig};
     use proof_lib::ProofConfig;
 
-    let mut parent = ProofConfig::default();
-    parent.files = FilesConfig {
-        include: vec!["docs/**/*.md".to_string()],
-        exclude: vec![],
-        root: false,
+    let parent = ProofConfig {
+        files: FilesConfig {
+            include: vec!["docs/**/*.md".to_string()],
+            exclude: vec![],
+            root: false,
+        },
+        ..Default::default()
     };
 
     let child = ProofConfig::default();

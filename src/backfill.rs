@@ -40,6 +40,9 @@ pub struct BackfillSummary {
 pub struct BackfillFileReport {
     pub original_path: PathBuf,
     pub generated_path: PathBuf,
+    pub generated_status: String,
+    pub safe_edit_path: String,
+    pub repair_command: String,
     pub classification: String,
     pub confidence: String,
     pub blocks: BackfillBlockCounts,
@@ -146,7 +149,26 @@ pub fn run(options: BackfillOptions) -> Result<BackfillReport> {
             .strip_prefix(&input.base)
             .unwrap_or(&input.path)
             .to_path_buf();
-        let source = literal_source(&relative_original, &original);
+        let safe_edit_path = format!(
+            "edit {} or promote {} after review",
+            relative_original.display().to_string().replace('\\', "/"),
+            generated_path.display().to_string().replace('\\', "/")
+        );
+        let repair_command = format!(
+            "proof backfill {} --output-source {} --literal-first --check-roundtrip",
+            relative_original.display().to_string().replace('\\', "/"),
+            options
+                .output_source
+                .display()
+                .to_string()
+                .replace('\\', "/")
+        );
+        let source = literal_source(
+            &relative_original,
+            &original,
+            &safe_edit_path,
+            &repair_command,
+        );
         let inventory = classify_blocks(&original);
 
         if let Some(parent) = generated_path.parent() {
@@ -160,6 +182,9 @@ pub fn run(options: BackfillOptions) -> Result<BackfillReport> {
         let mut file_report = BackfillFileReport {
             original_path: input.path.clone(),
             generated_path: generated_path.clone(),
+            generated_status: "generated_candidate".to_string(),
+            safe_edit_path,
+            repair_command,
             classification: "literal_markdown".to_string(),
             confidence: if options.literal_first {
                 "high"
@@ -752,10 +777,17 @@ fn looks_diagram_like(line: &str) -> bool {
         && !trimmed.ends_with('.')
 }
 
-fn literal_source(original_path: &Path, original: &str) -> String {
+fn literal_source(
+    original_path: &Path,
+    original: &str,
+    safe_edit_path: &str,
+    repair_command: &str,
+) -> String {
     format!(
-        "---\ntags: [backfill]\nops: [backfill]\ncontent_tags: [markdown]\nproof_original: \"{}\"\n---\n{}",
+        "---\ntags: [backfill]\nops: [backfill]\ncontent_tags: [markdown]\nproof_generated_status: generated_candidate\nproof_safe_edit_path: \"{}\"\nproof_original: \"{}\"\nproof_repair_command: \"{}\"\n---\n{}",
+        safe_edit_path,
         original_path.display().to_string().replace('\\', "/"),
+        repair_command,
         original
     )
 }

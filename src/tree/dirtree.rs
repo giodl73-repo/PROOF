@@ -362,11 +362,7 @@ mod tests {
         let result = generate(&opts).unwrap();
         let lines: Vec<&str> = result.lines().collect();
         // The last entry at each level must use └──
-        let last_non_indent = lines
-            .iter()
-            .filter(|l| !l.trim().is_empty())
-            .last()
-            .unwrap();
+        let last_non_indent = lines.iter().rfind(|l| !l.trim().is_empty()).unwrap();
         assert!(
             last_non_indent.contains("└──"),
             "last entry should use └──: {:?}",

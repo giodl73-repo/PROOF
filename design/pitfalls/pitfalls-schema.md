@@ -129,7 +129,11 @@ source path, derived status, safe edit path, and repair command. Backfill and
 compile guides should include a user-task fixture that starts from a visible
 generated artifact and leads the user back to the authoritative source.
 
-**Status:** OPEN
+**Status:** SOLVED
 **Evidence:** `README.md`, `docs/guides/00-getting-started.md`,
-`docs/guides/14-backfill-migration.md`, and
-`docs/adoption/reuse-boundary.md`.
+`docs/guides/14-backfill-migration.md`, `docs/adoption/reuse-boundary.md`,
+`src/backfill.rs`, and
+`tests/integration_tests.rs::binary_backfill_literal_generates_source_and_report`.
+**Test:** `tests/integration_tests.rs::binary_backfill_literal_generates_source_and_report`
+asserts generated backfill sources and reports expose `generated_candidate`,
+safe edit path, original source path, and repair command.

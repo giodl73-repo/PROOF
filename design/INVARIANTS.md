@@ -202,6 +202,23 @@ a proper delimiter. proof enforces this mechanically.
 
 ---
 
+### I-16: Generated Backfill Source Carries Safe Edit Custody
+
+**Claim:** Every `.source.md` candidate written by `proof backfill` identifies
+itself as `proof_generated_status: generated_candidate`, names
+`proof_original`, gives a `proof_safe_edit_path`, and records a
+`proof_repair_command`.
+
+**Why it matters:** Generated `.source.md` files are intentionally readable; a
+user needs the safe edit boundary in the file and in the report before treating
+it as the source of truth.
+
+**Test:** `tests/integration_tests.rs::binary_backfill_literal_generates_source_and_report`
+
+**Status:** HOLDS — implemented by backfill frontmatter and JSON report fields.
+
+---
+
 ## Invariant Health
 
 | Invariant | Status | Has Test? |
@@ -221,5 +238,8 @@ a proper delimiter. proof enforces this mechanically.
 | I-13: Fix reverse line order | HOLDS | yes |
 | I-14: Bottom-close border cannot open box | HOLDS | yes |
 | I-15: Annotation after `│` detected as width error | HOLDS | yes |
+| I-16: Generated backfill source carries safe edit custody | HOLDS | yes |
+
+## Invariant Action Items
 
 **Action items:** Write tests for I-3, I-4, I-6, I-7. Strengthen I-5 with a cascade test.

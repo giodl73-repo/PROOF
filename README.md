@@ -238,6 +238,11 @@ proof backfill docs/ --output-source proof-source/ --literal-first --check-round
 This creates `.source.md` candidates and `backfill-report.json`. The report
 includes advisory block counts for prose, fences, markdown tables, ASCII table
 candidates, chart-like blocks, diagram-like blocks, and ambiguous blocks.
+Generated candidates are not automatically the edited source of truth. Each
+backfill source carries `proof_generated_status: generated_candidate`,
+`proof_original`, `proof_safe_edit_path`, and `proof_repair_command`; the report
+also repeats the generated status, safe edit path, and repair command. This
+keeps `SC-05` closed when authors start from the easiest visible file.
 
 To start a structured migration, add `--extract-tables`. Proof still preserves
 the literal `.source.md` body, and writes high-confidence markdown pipe tables to
