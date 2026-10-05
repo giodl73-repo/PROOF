@@ -233,14 +233,15 @@ Use `paths_exclude` to carve exceptions out of a broad `paths = ["*.md"]` instea
 
 ## `[[custom_rules]]`
 
-Free-form regex rules. Each rule is applied to every file (or a glob subset via `only_in`) and reports on match or non-match. Use `negate = true` for "this pattern should NOT appear" rules (TODOs, leftover review tags) — that's almost always what you actually want.
+Free-form regex rules. Each rule is applied to every file (or a glob subset via `only_in`) and reports when `warn_when` matches. Use `warn_when = "found"` for "this pattern should NOT appear" rules such as TODOs or leftover review tags. Use `warn_when = "missing"` for required regex patterns. The legacy `negate = true` field is still accepted as an alias for `warn_when = "found"`.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `name` | string | required | Identifier shown in diagnostics |
 | `description` | string | required | Human-readable purpose |
 | `pattern` | string (regex) | required | Rust `regex` syntax |
-| `negate` | bool | `false` | If `true`, **warn when pattern IS found** (inverse match) |
+| `warn_when` | `"found"` or `"missing"` | derived from `negate` | Direct trigger for the diagnostic |
+| `negate` | bool | `false` | Legacy alias: `true` means `warn_when = "found"`, `false` means `warn_when = "missing"` |
 | `severity` | string | `"warning"` | `"error"` or `"warning"` |
 | `only_in` | `Vec<string>` (globs) | `[]` | Restrict to matching files (empty = all files) |
 
@@ -418,7 +419,7 @@ required_h2_all = ["The Big Picture", "Common Confusion Points"]
 name        = "no_editor_tags"
 description = "@editor review tags should be resolved before publication"
 pattern     = "@editor\\["
-negate      = true                # warn when pattern IS found
+warn_when   = "found"             # warn when pattern IS found
 severity    = "warning"
 
 # ── Pinned figures with invariants ──────────────────────────────────────────

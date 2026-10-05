@@ -860,7 +860,7 @@ mod tests {
         let mp = snapshot_dir(root, "v1").join("manifest.json");
         let raw = std::fs::read_to_string(&mp).unwrap();
         let mut m: SnapshotManifest = serde_json::from_str(&raw).unwrap();
-        m.total_size = m.total_size + 999_999; // change a covered field, leave hash stale
+        m.total_size += 999_999; // change a covered field, leave hash stale
         std::fs::write(&mp, serde_json::to_string(&m).unwrap()).unwrap();
         let result = snapshot_restore(root, "v1");
         assert!(

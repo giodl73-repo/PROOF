@@ -100,7 +100,7 @@ fn e2e_stage1_rich_output_contains_errors_with_context() {
     for diag in arr.iter().filter(|d| {
         d["code"]
             .as_str()
-            .map_or(false, |c| c.starts_with("ascii_box"))
+            .is_some_and(|c| c.starts_with("ascii_box"))
     }) {
         let rich = &diag["rich"];
         assert!(
@@ -139,7 +139,7 @@ fn e2e_stage1_rich_output_contains_errors_with_context() {
     // clean.md must produce zero diagnostics
     let clean_errors: Vec<_> = arr
         .iter()
-        .filter(|d| d["file"].as_str().map_or(false, |f| f.contains("clean")))
+        .filter(|d| d["file"].as_str().is_some_and(|f| f.contains("clean")))
         .collect();
     assert!(
         clean_errors.is_empty(),

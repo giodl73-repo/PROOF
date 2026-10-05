@@ -705,7 +705,7 @@ mod tests {
     }
 
     #[test]
-    fn display_Vmatrix() {
+    fn display_vmatrix_double_bars() {
         let (lines, diags) = render_display_math(
             r"\begin{Vmatrix} a & b \\ c & d \end{Vmatrix}",
             0,

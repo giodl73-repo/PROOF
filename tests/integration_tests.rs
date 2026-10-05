@@ -8,7 +8,9 @@ use proof_lib::checks::ascii_flow::AsciiFlowCheck;
 use proof_lib::checks::markdown::MarkdownCheck;
 use proof_lib::checks::markdown_table::MarkdownTableCheck;
 use proof_lib::checks::Check;
-use proof_lib::config::{AsciiBoxConfig, AsciiFlowConfig, MarkdownConfig, ProofConfig};
+use proof_lib::config::{
+    AsciiBoxConfig, AsciiFlowConfig, CustomRule, CustomRuleWarnWhen, MarkdownConfig, ProofConfig,
+};
 use proof_lib::diagnostic::Severity;
 use proof_lib::Runner;
 use std::path::{Path, PathBuf};
@@ -67,7 +69,7 @@ fn width_mismatch_detected_in_fixture() {
     );
     let codes: Vec<_> = errors.iter().map(|d| d.code).collect();
     assert!(
-        codes.iter().any(|&c| c == "ascii_box_width"),
+        codes.contains(&"ascii_box_width"),
         "expected ascii_box_width error, got codes: {:?}",
         codes
     );
@@ -388,6 +390,92 @@ fn markdown_required_pattern_missing() {
     assert!(
         diags.iter().any(|d| d.code == "md_missing_pattern"),
         "expected md_missing_pattern warning"
+    );
+}
+
+#[test]
+fn custom_rule_warn_when_found_reports_matching_content() {
+    let dir = tempfile::tempdir().unwrap();
+    let doc = dir.path().join("doc.md");
+    std::fs::write(&doc, "# Title\n\nTODO: remove this\n").unwrap();
+
+    let mut cfg = ProofConfig::default();
+    cfg.custom_rules.push(CustomRule {
+        name: "no_todo".to_string(),
+        description: "TODO markers should be resolved".to_string(),
+        pattern: "TODO".to_string(),
+        warn_when: Some(CustomRuleWarnWhen::Found),
+        negate: false,
+        severity: "warning".to_string(),
+        only_in: Vec::new(),
+    });
+
+    let runner = Runner::new_with_config(dir.path(), cfg).unwrap();
+    let diags = runner.lint_file(&doc);
+    let custom = diags
+        .iter()
+        .find(|d| d.code == "custom_rule")
+        .expect("warn_when=found should report TODO");
+    assert_eq!(custom.span.line, 3);
+    assert!(custom.message.contains("no_todo"), "got: {:?}", custom);
+}
+
+#[test]
+fn custom_rule_warn_when_missing_reports_absent_content() {
+    let dir = tempfile::tempdir().unwrap();
+    let doc = dir.path().join("doc.md");
+    std::fs::write(&doc, "# Title\n\nBody\n").unwrap();
+
+    let mut cfg = ProofConfig::default();
+    cfg.custom_rules.push(CustomRule {
+        name: "require_summary".to_string(),
+        description: "Summary section should be present".to_string(),
+        pattern: "## Summary".to_string(),
+        warn_when: Some(CustomRuleWarnWhen::Missing),
+        negate: false,
+        severity: "error".to_string(),
+        only_in: Vec::new(),
+    });
+
+    let runner = Runner::new_with_config(dir.path(), cfg).unwrap();
+    let diags = runner.lint_file(&doc);
+    let custom = diags
+        .iter()
+        .find(|d| d.code == "custom_rule")
+        .expect("warn_when=missing should report absent Summary");
+    assert_eq!(custom.severity, Severity::Error);
+    assert!(
+        custom.message.contains("pattern missing"),
+        "got: {:?}",
+        custom
+    );
+}
+
+#[test]
+fn custom_rule_legacy_negate_true_warns_when_found() {
+    let dir = tempfile::tempdir().unwrap();
+    let doc = dir.path().join("doc.md");
+    std::fs::write(&doc, "# Title\n\n@editor[review]\n").unwrap();
+
+    let mut cfg = ProofConfig::default();
+    cfg.custom_rules.push(CustomRule {
+        name: "no_editor_tags".to_string(),
+        description: "editor tags should be resolved".to_string(),
+        pattern: "@editor\\[".to_string(),
+        warn_when: None,
+        negate: true,
+        severity: "warning".to_string(),
+        only_in: Vec::new(),
+    });
+
+    let runner = Runner::new_with_config(dir.path(), cfg).unwrap();
+    let diags = runner.lint_file(&doc);
+    assert!(
+        diags
+            .iter()
+            .any(|d| d.code == "custom_rule" && d.message.contains("pattern found")),
+        "legacy negate=true should still warn when pattern is found:\n{}",
+        format_diags(&diags)
     );
 }
 
@@ -892,6 +980,25 @@ fn invariant_i6_tolerance_bounds() {
     assert!(
         col_errors_lenient.is_empty(),
         "tolerance=1 must suppress drift of 1"
+    );
+}
+
+#[test]
+fn ascii_box_tolerance_zero_ignores_trailing_spaces() {
+    let content = "```\n+------+\n| ok   |  \n+------+\t\n```";
+    let path = Path::new("test.md");
+    let check = AsciiBoxCheck {
+        config: AsciiBoxConfig {
+            tolerance: 0,
+            ..AsciiBoxConfig::default()
+        },
+    };
+
+    let diags = check.check(path, content);
+    assert!(
+        diags.iter().all(|d| d.code != "ascii_box_width"),
+        "trailing whitespace should not change structural width:\n{}",
+        format_diags(&diags)
     );
 }
 
@@ -1597,6 +1704,7 @@ fn binary_status_mdcrop_rejects_dir_with_view() {
 
 #[test]
 fn binary_backfill_literal_generates_source_and_report() {
+    // Regression for SC-05 and I-16: generated source candidates must name their safe edit path.
     let bin = debug_bin();
     if !bin.exists() {
         return;
@@ -1637,7 +1745,22 @@ fn binary_backfill_literal_generates_source_and_report() {
         generated_text
     );
     assert!(
+        generated_text.contains("proof_generated_status: generated_candidate"),
+        "got:\n{}",
+        generated_text
+    );
+    assert!(
+        generated_text.contains("proof_safe_edit_path: \"edit guide.md or promote"),
+        "got:\n{}",
+        generated_text
+    );
+    assert!(
         generated_text.contains("proof_original: \"guide.md\""),
+        "got:\n{}",
+        generated_text
+    );
+    assert!(
+        generated_text.contains("proof_repair_command: \"proof backfill guide.md --output-source"),
         "got:\n{}",
         generated_text
     );
@@ -1651,6 +1774,18 @@ fn binary_backfill_literal_generates_source_and_report() {
         serde_json::from_str(&std::fs::read_to_string(&report_path).unwrap()).unwrap();
     assert_eq!(report["summary"]["files_generated"], 1);
     assert_eq!(report["summary"]["roundtrip_passed"], 1);
+    assert_eq!(
+        report["files"][0]["generated_status"],
+        "generated_candidate"
+    );
+    assert!(report["files"][0]["safe_edit_path"]
+        .as_str()
+        .unwrap()
+        .contains("edit guide.md or promote"));
+    assert!(report["files"][0]["repair_command"]
+        .as_str()
+        .unwrap()
+        .contains("proof backfill guide.md --output-source"));
     assert_eq!(report["files"][0]["classification"], "literal_markdown");
     assert_eq!(report["files"][0]["blocks"]["markdown_tables"], 1);
     assert_eq!(report["summary"]["blocks"]["markdown_tables"], 1);
@@ -5022,6 +5157,53 @@ fn binary_pin_appends_davinci_entry() {
 }
 
 #[test]
+fn binary_pin_rejects_stale_numeric_uri_when_label_available() {
+    let bin = debug_bin();
+    if !bin.exists() {
+        return;
+    }
+
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join("proof.toml"), "").unwrap();
+    std::fs::write(
+        dir.path().join("README.md"),
+        "# Readme\n\n## Overview\n\n```\nGOROUTINE SCHEDULER\n┌────┐\n│ go │\n└────┘\n```\n",
+    )
+    .unwrap();
+
+    let output = std::process::Command::new(&bin)
+        .current_dir(dir.path())
+        .args([
+            "pin",
+            "md://README.md#overview:figure:0",
+            "--id",
+            "scheduler",
+        ])
+        .output()
+        .expect("failed to run proof pin");
+
+    assert!(
+        !output.status.success(),
+        "proof pin should reject stale numeric URI:\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("md_numeric_uri_stale"), "got:\n{}", stderr);
+    assert!(
+        stderr.contains("md://README.md#overview:figure:GOROUTINE SCHEDULER"),
+        "got:\n{}",
+        stderr
+    );
+    let toml = std::fs::read_to_string(dir.path().join("proof.toml")).unwrap();
+    assert!(
+        !toml.contains("[[davinci]]"),
+        "stale numeric pin should not be registered:\n{}",
+        toml
+    );
+}
+
+#[test]
 fn binary_resolve_prints_json_for_heading() {
     let bin = debug_bin();
     if !bin.exists() {
@@ -5059,6 +5241,48 @@ fn binary_resolve_prints_json_for_heading() {
     assert_eq!(json["section_heading"], "Overview");
     assert_eq!(json["content"], "## Overview");
     assert!(json["line_start"].as_u64().unwrap() > 0, "got:\n{}", json);
+}
+
+#[test]
+fn binary_resolve_warns_for_stale_numeric_uri_with_named_form() {
+    let bin = debug_bin();
+    if !bin.exists() {
+        return;
+    }
+
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("README.md"),
+        "# Readme\n\n## Overview\n\n```\nGOROUTINE SCHEDULER\n┌────┐\n│ go │\n└────┘\n```\n",
+    )
+    .unwrap();
+
+    let output = std::process::Command::new(&bin)
+        .args([
+            "resolve",
+            "md://README.md#overview:figure:0",
+            "--format",
+            "json",
+            "--root",
+        ])
+        .arg(dir.path())
+        .output()
+        .expect("failed to run proof resolve");
+
+    assert!(
+        output.status.success(),
+        "proof resolve failed:\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["label"], "GOROUTINE SCHEDULER");
+    assert_eq!(json["warnings"][0]["code"], "md_numeric_uri_stale");
+    assert_eq!(
+        json["warnings"][0]["named_uri"],
+        "md://README.md#overview:figure:GOROUTINE SCHEDULER"
+    );
 }
 
 #[test]
@@ -6261,18 +6485,22 @@ fn config_merge_files_exclude_is_additive() {
     use proof_lib::config::{merge, FilesConfig};
     use proof_lib::ProofConfig;
 
-    let mut parent = ProofConfig::default();
-    parent.files = FilesConfig {
-        include: vec!["**/*.md".to_string()],
-        exclude: vec!["_archive/**".to_string()],
-        root: false,
+    let parent = ProofConfig {
+        files: FilesConfig {
+            include: vec!["**/*.md".to_string()],
+            exclude: vec!["_archive/**".to_string()],
+            root: false,
+        },
+        ..Default::default()
     };
 
-    let mut child = ProofConfig::default();
-    child.files = FilesConfig {
-        include: vec!["**/*.md".to_string()],
-        exclude: vec!["drafts/**".to_string()], // child adds its own exclusion
-        root: false,
+    let child = ProofConfig {
+        files: FilesConfig {
+            include: vec!["**/*.md".to_string()],
+            exclude: vec!["drafts/**".to_string()], // child adds its own exclusion
+            root: false,
+        },
+        ..Default::default()
     };
 
     let merged = merge(parent, child);
@@ -6293,11 +6521,13 @@ fn config_merge_default_child_include_preserves_parent_include() {
     use proof_lib::config::{merge, FilesConfig};
     use proof_lib::ProofConfig;
 
-    let mut parent = ProofConfig::default();
-    parent.files = FilesConfig {
-        include: vec!["docs/**/*.md".to_string()],
-        exclude: vec![],
-        root: false,
+    let parent = ProofConfig {
+        files: FilesConfig {
+            include: vec!["docs/**/*.md".to_string()],
+            exclude: vec![],
+            root: false,
+        },
+        ..Default::default()
     };
 
     let child = ProofConfig::default();

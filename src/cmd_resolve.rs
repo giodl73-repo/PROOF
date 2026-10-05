@@ -2,6 +2,8 @@ use anyhow::Result;
 use colored::Colorize;
 use std::path::PathBuf;
 
+use crate::mdpath_warnings::numeric_uri_stale_warning;
+
 #[derive(clap::Args)]
 pub(crate) struct Args {
     /// The md:// URI to resolve
@@ -22,9 +24,20 @@ pub(crate) fn run(args: Args) -> Result<()> {
 
     let element =
         mdpath::resolve(&parsed, &root).map_err(|e| anyhow::anyhow!("resolve failed: {}", e))?;
+    let warning = numeric_uri_stale_warning(&parsed, &element);
 
     match format.as_str() {
         "json" => {
+            let warnings = warning
+                .as_ref()
+                .map(|w| {
+                    vec![serde_json::json!({
+                        "code": w.code,
+                        "message": w.message,
+                        "named_uri": w.named_uri,
+                    })]
+                })
+                .unwrap_or_default();
             let json = serde_json::json!({
                 "uri": element.uri,
                 "file": element.file.display().to_string(),
@@ -35,6 +48,7 @@ pub(crate) fn run(args: Args) -> Result<()> {
                 "label": element.label,
                 "section_heading": element.section_heading,
                 "content": element.content,
+                "warnings": warnings,
             });
             println!("{}", serde_json::to_string_pretty(&json)?);
         }
@@ -52,6 +66,9 @@ pub(crate) fn run(args: Args) -> Result<()> {
             }
             println!("  lines:    {}–{}", element.line_start, element.line_end);
             println!("  file:     {}", element.file.display());
+            if let Some(w) = &warning {
+                println!("  warning:  [{}] {}", w.code, w.message);
+            }
             println!();
             println!("{}", element.content);
         }

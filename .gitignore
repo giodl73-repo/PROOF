@@ -3,3 +3,8 @@
 /src/user-scenarios/*-out.md
 /src/user-scenarios/*-out.slides.md
 .cargo/config.toml
+
+/dist/
+/node_modules/
+/playwright-report/
+/test-results/

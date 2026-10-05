@@ -15,6 +15,10 @@ misaligned.
 **Domain:** Any code that measures line width for alignment comparison without using a
 unicode-width library.
 
+**Why it's hard to catch:** The diagram looks aligned in the editor while byte
+counts differ from visual columns. ASCII-only fixtures pass, so the defect stays
+hidden until Unicode box characters enter the corpus.
+
 **Structural solution:** Always compute visual width through `unicode_width::UnicodeWidthChar`
 or equivalent. Store and compare visual column positions, not byte offsets, for alignment checks.
 
@@ -32,6 +36,10 @@ A box border heuristic that fires on `| Option A | Option B |` will claim it's t
 a box, then search for a bottom border and report an "unclosed box" everywhere.
 
 **Domain:** Markdown files where prose tables (`| col | col |`) and ASCII art boxes coexist.
+
+**Why it's hard to catch:** Markdown tables and box content rows share the same
+pipe character. A broad heuristic returns plausible "unclosed box" diagnostics
+unless tests include normal prose tables next to real diagrams.
 
 **Structural solution:** Restrict box detection to fenced code blocks (`code_blocks_only = true`).
 Markdown tables outside code blocks are not ASCII art and should not be validated as boxes.
@@ -53,6 +61,10 @@ visually but uses different code points on different rows.
 
 **Domain:** Any document created in multiple editors or pasted from different sources.
 
+**Why it's hard to catch:** Mixed-character boxes can be visually aligned and
+semantically obvious to a reader. A detector that keys on only one character
+family fails only after copied or editor-normalized diagrams mix glyph sets.
+
 **Structural solution:** Normalize detection: `is_border_junction()` accepts both `+` and all
 Unicode corner/junction variants (`┌┐└┘├┤┬┴┼`). `is_vertical()` accepts both `|` and Unicode
 vertical variants (`│║╎┆┊`). The junction column extractor records visual column positions
@@ -72,6 +84,11 @@ encounters the inner border line as a "content row," it will check that the inne
 align with the outer `|` positions — and report misalignments that aren't real.
 
 **Domain:** Architecture diagrams with multiple nested levels.
+
+**Why it's hard to catch:** Nested diagrams are intentionally box-like at
+multiple levels, so inner borders look like legitimate rows to a flat scanner.
+False positives surface only on richer architecture diagrams, not simple
+single-box fixtures.
 
 **Structural solution:** Classify a line as a border (not content) if it passes the `is_border_line()`
 test. Only lines that are NOT border lines are validated as content rows. The outer box validator
@@ -93,6 +110,10 @@ so this specific case is safe — but a partially-drawn border that starts with 
 continuation of a box) will be misidentified as a content row.
 
 **Domain:** Cell padding validation.
+
+**Why it's hard to catch:** Border and content rows are both part of the same
+visual box, and malformed borders can resemble content rows. Padding checks
+look correct until they run before structural row classification.
 
 **Structural solution:** Before checking cell padding, call `is_content_line()` to confirm the
 line starts AND ends with `|` or `│`. Border lines typically start with `+` or `┌/└`, so they
@@ -116,6 +137,11 @@ between them have wildly different widths → hundreds of false `ascii_box_width
 **Domain:** Any ASCII/Unicode flowchart with stacked boxes separated by arrows or labels.
 This is the dominant structure in the MAXIM reference library's landscape diagrams —
 every guide's main diagram uses this pattern.
+
+**Why it's hard to catch:** A bottom border and a top border are both valid
+border lines when viewed in isolation. The bug appears only when the detector
+tracks flowchart sequence and accidentally treats a closing border as a new
+opening border.
 
 **Scale of impact:** 95 false errors eliminated from a 20-file directory scan after fix.
 In a 2,170-file library this could account for thousands of false positives.
@@ -147,6 +173,11 @@ INSIDE escaped pipes (`\|` → `\ |`), inside code spans (`` `A | B` ``), and in
 **Domain:** Any parser or transformer that processes GFM table rows character-by-character
 or splits on `|` without handling escaping rules.
 
+**Why it's hard to catch:** The table still renders before the auto-fix, and
+simple rows pass. Corruption appears only when escaped pipes, code spans, or
+operators are present and a fixer rewrites the row as if every pipe were a
+separator.
+
 **Structural solution:** Walk the row character-by-character, tracking:
 - `\\` before `|` → escaped pipe, treat as content
 - Opening/closing backtick → inside code span, `|` is content
@@ -174,6 +205,10 @@ characters that are also used as markdown structural markers. A heuristic that c
 **Domain:** Any check that uses symbol characters as structural markers in contexts
 where those same characters appear in human-readable identifiers.
 
+**Why it's hard to catch:** The same symbol has valid structural and
+identifier meanings. A heuristic can pass ordinary Markdown-heading fixtures
+while failing only on language or product names such as `C#`, `F#`, and `C++`.
+
 **Structural solution:** Require the structural character to be preceded by a space
 or appear at a specific structural position. For trailing `#` in headings: only flag
 when the char before the trailing `#` run is whitespace — `## Title ##` (space before
@@ -197,6 +232,10 @@ pass because the test is insufficiently specific.
 
 **Domain:** Any test that writes fixture `.md` files and asserts "zero diagnostics."
 
+**Why it's hard to catch:** The fixture is trusted as the baseline, so failures
+are interpreted as detector bugs or weak assertions. Unless the fixture itself
+is checked first, the test can encode authoring mistakes as expected behavior.
+
 **Structural solution:**
 1. After creating a fixture file, run `proof check` on it manually before writing the test.
 2. Tests that assert zero diagnostics should always verify against the specific fixture's
@@ -207,6 +246,9 @@ pass because the test is insufficiently specific.
 **How discovered:** `stacked_boxes.md` initially had `│ Box Three│` (no trailing space),
 triggering `ascii_cell_padding`. `bottom_border_only.md` had a branching diagram whose
 `┌───────┴───────┐` created a false box. Both required fixture redesign.
+**Test:** `tests/integration_tests.rs::stacked_boxes_no_phantom_box_errors` and
+`tests/integration_tests.rs::bottom_close_border_not_treated_as_box_top` retain the corrected
+fixture behavior.
 
 ---
 
@@ -219,10 +261,14 @@ is visually correct.
 
 **Domain:** Any file created with editors that do not strip trailing whitespace.
 
+**Why it's hard to catch:** Trailing spaces are invisible in most editors but
+still affect width measurement. The false positive appears only under strict
+`tolerance = 0`, so more permissive configurations can hide the defect.
+
 **Structural solution:** Either strip trailing whitespace before measuring visual width, or offer
 `trim_trailing_whitespace = true` as a config option. The default config should tolerate trailing
 spaces because they are invisible and don't constitute a real misalignment.
 
-**Status:** OPEN — current implementation measures visual width including trailing spaces.
-**Workaround:** Use `tolerance = 1` in `proof.toml` to absorb single trailing-space drift.
-**Test:** Not yet written — write a fixture with trailing spaces to lock in the behavior.
+**Status:** SOLVED — structural width measurement trims trailing spaces and tabs before
+comparing row widths, while leaving separator-column checks on the original line.
+**Test:** `tests/integration_tests.rs::ascii_box_tolerance_zero_ignores_trailing_spaces`.

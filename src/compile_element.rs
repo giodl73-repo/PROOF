@@ -451,7 +451,7 @@ mod tests {
             violation_messages(&violations)
         );
         assert!(out.contains("42"), "output should contain value: {:?}", out);
-        assert_eq!(crate::layout::visual_width(&" 42"), 3);
+        assert_eq!(crate::layout::visual_width(" 42"), 3);
     }
 
     #[test]

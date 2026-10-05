@@ -1,0 +1,15 @@
+[package]
+name="proof-web"
+version="0.1.0"
+edition="2021"
+license="MIT"
+[lib]
+crate-type=["cdylib","rlib"]
+[features]
+wasm=["dep:wasm-bindgen"]
+[dependencies]
+proof-core={path="../proof-core"}
+proof-math={path="../proof-math"}
+serde={version="1",features=["derive"]}
+serde_json="1"
+wasm-bindgen={version="=0.2.127",optional=true}

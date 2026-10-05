@@ -190,7 +190,7 @@ mod tests {
         // Allow rounding slack — segment widths are computed independently and
         // each can round up by 0.5, so the sum can exceed bar_area by a few.
         assert!(
-            glyphs_total >= 40 && glyphs_total <= 55,
+            (40..=55).contains(&glyphs_total),
             "expected ~bar_area filled, got {}: {:?}",
             glyphs_total,
             lines[0]

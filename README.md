@@ -1,3 +1,11 @@
+## Browser workbench
+
+[Open the Markdown workbench](https://giodl73-repo.github.io/PROOF/). The browser runs the same Rust heading, table and ASCII checks as the CLI, with HTML and terminal math previews and Markdown/HTML/JSON downloads. Inputs stay local (64 KB, 2,000 lines). Shared source lives in the URL fragment.
+
+This is a fixed single-document policy: filesystem links, cascading configuration, directives, repository admission and PDF/Office exports remain native. The shared `proof-core` crate preserves existing native public re-exports; `proof-web` owns browser policy and bounds.
+
+Build: `python tools/build-pages.py` with Rust 1.95.0 and wasm-bindgen-cli 0.2.127; then `npm ci && npm run test:pages`.
+
 # PROOF
 
 **Weave Markdown into finished documents.**
@@ -238,6 +246,11 @@ proof backfill docs/ --output-source proof-source/ --literal-first --check-round
 This creates `.source.md` candidates and `backfill-report.json`. The report
 includes advisory block counts for prose, fences, markdown tables, ASCII table
 candidates, chart-like blocks, diagram-like blocks, and ambiguous blocks.
+Generated candidates are not automatically the edited source of truth. Each
+backfill source carries `proof_generated_status: generated_candidate`,
+`proof_original`, `proof_safe_edit_path`, and `proof_repair_command`; the report
+also repeats the generated status, safe edit path, and repair command. This
+keeps `SC-05` closed when authors start from the easiest visible file.
 
 To start a structured migration, add `--extract-tables`. Proof still preserves
 the literal `.source.md` body, and writes high-confidence markdown pipe tables to

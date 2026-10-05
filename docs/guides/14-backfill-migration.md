@@ -37,12 +37,17 @@ proof backfill docs/ --output-source proof-source/ --literal-first --check-round
 Expected outputs:
 
 - generated `.source.md` files in `proof-source/`
-- provenance frontmatter with `ops = ["backfill"]`
+- provenance frontmatter with `ops = ["backfill"]`,
+  `proof_generated_status: generated_candidate`, `proof_original`,
+  `proof_safe_edit_path`, and `proof_repair_command`
 - `backfill-report.json`
 - round-trip status for each file when `--check-roundtrip` is set
 
 Treat a failed round trip as a blocker. Do not accept extracted source ownership
 until literal output is trustworthy.
+Treat the generated `.source.md` as a candidate until review promotes it; if the
+visible generated file is stale, follow `proof_safe_edit_path` or rerun
+`proof_repair_command`.
 
 ---
 
@@ -97,8 +102,10 @@ Before replacing hand-authored markdown with proof-owned source:
 2. The backfill report has no unreviewed high-risk ambiguous blocks.
 3. Extracted tables have sidecars and report entries.
 4. The generated source compiles in CI.
-5. The compiled `.md` output is the artifact people read.
-6. Future edits happen in `.source.md`, not the compiled `.md`.
+5. Generated candidates carry safe edit custody and repair commands.
+6. The compiled `.md` output is the artifact people read.
+7. Future edits happen in reviewed `.source.md`, not compiled `.md` or
+   unreviewed generated candidates.
 
 For a MAXIM-style repo, cut over one directory or section at a time. A good first
 slice is a guide directory with mostly prose and markdown tables, not a directory

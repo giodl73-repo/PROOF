@@ -16,8 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust stable
+      - name: Install Rust 1.95.0
         uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -34,7 +36,7 @@ jobs:
       - name: Check out pinned mdcrop sibling
         run: |
           git init ../mdcrop
-          git -C ../mdcrop fetch --depth 1 https://github.com/giodl73-repo/MDCROP.git 4c3f6e6a7388062575ea37b869fb159d1298fabc
+          git -C ../mdcrop fetch --depth 1 https://github.com/giodl73-repo/MDCROP.git 01bf332a2a39d8c95d6af7389f3fcab23b447f62
           git -C ../mdcrop checkout --detach FETCH_HEAD
 
       - name: Build
@@ -56,6 +58,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: 1.95.0
           components: clippy, rustfmt
       - name: Clone mdpath sibling
         run: git clone https://github.com/giodl73-repo/MDPATH ../mdpath
@@ -68,6 +71,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.95.0
       - name: Clone mdpath sibling
         run: git clone https://github.com/giodl73-repo/MDPATH ../mdpath
       - name: Build debug binary

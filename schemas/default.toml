@@ -77,5 +77,6 @@ enabled = false
 # name = "no_todo"
 # description = "TODO comments should not remain in published guides"
 # pattern = "TODO|FIXME|HACK"
-# negate = true   # warn when pattern IS found
+# warn_when = "found"   # "found" forbids a pattern; "missing" requires it
+# negate = true         # legacy equivalent to warn_when = "found"
 # severity = "warning"

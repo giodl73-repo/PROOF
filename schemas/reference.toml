@@ -86,7 +86,7 @@ severity = "warning"
 name = "no_editor_tags"
 description = "@editor review tags should be resolved before considering a guide complete"
 pattern = "@editor\\["
-negate = true
+warn_when = "found"
 severity = "warning"
 
 # ─────────────────────────────────────────────

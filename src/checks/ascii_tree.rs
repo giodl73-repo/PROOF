@@ -831,8 +831,10 @@ mod tests {
     #[test]
     fn test_disabled_produces_no_diags() {
         let content = tree_block("project/\n└── src/\n├── README.md"); // T-1 violation
-        let mut cfg = AsciiTreeConfig::default();
-        cfg.enabled = false;
+        let cfg = AsciiTreeConfig {
+            enabled: false,
+            ..Default::default()
+        };
         let check = AsciiTreeCheck { config: cfg };
         assert_eq!(check.check(Path::new("test.md"), &content).len(), 0);
     }

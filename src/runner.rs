@@ -3,6 +3,7 @@ use crate::checks::ascii_box::AsciiBoxCheck;
 use crate::checks::ascii_char::AsciiCharCheck;
 use crate::checks::ascii_flow::AsciiFlowCheck;
 use crate::checks::ascii_tree::AsciiTreeCheck;
+use crate::checks::custom_rules::CustomRulesCheck;
 use crate::checks::markdown::MarkdownCheck;
 use crate::checks::markdown_table::MarkdownTableCheck;
 use crate::checks::source_links::SourceLinkCheck;
@@ -228,6 +229,13 @@ fn build_checks(config: &ProofConfig, file: &Path, root: &Path) -> Vec<Box<dyn C
     if config.markdown_table.enabled {
         checks.push(Box::new(MarkdownTableCheck {
             config: config.markdown_table.clone(),
+        }));
+    }
+
+    if !config.custom_rules.is_empty() {
+        checks.push(Box::new(CustomRulesCheck {
+            rules: config.custom_rules.clone(),
+            root: root.to_path_buf(),
         }));
     }
 
