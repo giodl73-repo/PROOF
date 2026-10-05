@@ -38,6 +38,7 @@ function invalidate() {
   id++; result = null;
   generatedDownloads.forEach(key => $(key).disabled = true);
   $('diagnostics').replaceChildren(); $('finding-count').textContent = 'Not checked';
+  $('outline').replaceChildren(); $('outline-summary').textContent = 'Outline · not checked';
   $('preview').hidden = true; $('terminal').textContent = '';
   $('status').textContent = failed ? 'Rust engine unavailable. Your source can still be edited and downloaded.' : ready ? 'Checking with Rust…' : 'Loading Rust engine…';
 }
@@ -97,16 +98,52 @@ function renderFindings(diagnostics) {
       title.textContent = `${d.severity} · ${d.code} · line ${d.span.line}${d.code.startsWith('MATH-') ? ' (line only)' : `, column ${d.span.col}`}`;
       button.append(title, document.createTextNode(d.message));
       button.onclick = () => {
-        pane('source'); const source = $('source'); const lines = source.value.split('\n');
-        const offset = lines.slice(0, d.span.line - 1).reduce((n, line) => n + line.length + 1, 0);
-        source.focus(); source.setSelectionRange(offset, offset + (lines[d.span.line - 1]?.length || 0));
-        source.scrollTop = Math.max(0, (d.span.line - 3) * 22); sourceAids();
+        selectSourceLine(d.span.line);
       };
       button.title = 'Select this source line'; section.append(button);
     }
     $('diagnostics').append(section);
   }
 }
+
+function selectSourceLine(line) {
+  pane('source'); const source = $('source'); const lines = source.value.split('\n');
+  const offset = lines.slice(0, line - 1).reduce((n, text) => n + text.length + 1, 0);
+  source.focus(); source.setSelectionRange(offset, offset + (lines[line - 1]?.length || 0));
+  source.scrollTop = Math.max(0, (line - 3) * 22); sourceAids();
+}
+function renderOutline(headings) {
+  $('outline-summary').textContent = `Outline · ${headings.length} heading${headings.length === 1 ? '' : 's'}`;
+  if (!headings.length) { $('outline').textContent = 'No Markdown headings in this document.'; return; }
+  for (const heading of headings) {
+    const row = document.createElement('div'); row.className = 'outline-row';
+    row.style.paddingLeft = `${(heading.level - 1) * 10}px`;
+    const source = document.createElement('button'); source.className = 'outline-source';
+    source.textContent = `H${heading.level} · ${heading.title || '(Untitled heading)'} · line ${heading.line}`;
+    source.title = 'Select heading in source'; source.onclick = () => selectSourceLine(heading.line);
+    const preview = document.createElement('button'); preview.className = 'outline-preview'; preview.textContent = 'Preview';
+    preview.setAttribute('aria-label', `Preview ${heading.title || 'untitled heading'} at line ${heading.line}`);
+    preview.onclick = () => {
+      if (!result || !previewURL) return;
+      pane('preview'); $('view').value = 'html'; $('terminal').hidden = true; $('preview').hidden = false;
+      // Navigate the isolated document by fragment without reading its opaque origin.
+      $('preview').src = previewURL + '#' + heading.anchor;
+      $('view').focus();
+    };
+    row.append(source, preview); $('outline').append(row);
+  }
+}
+$('focus').onclick = () => {
+  const focused = $('focus').getAttribute('aria-pressed') !== 'true';
+  $('focus').setAttribute('aria-pressed', String(focused)); $('focus').textContent = focused ? 'Exit focus view' : 'Focus view';
+  document.body.classList.toggle('focus-mode', focused); $('workspace').dataset.focus = String(focused);
+  pane('source'); sourceAids();
+};
+$('show-findings').onclick = () => {
+  pane('checks'); $('pane-checks').scrollIntoView({block:'nearest'});
+  $('pane-checks').setAttribute('tabindex', '-1'); $('pane-checks').focus();
+};
+
 function workerFailed() { failed = true; ready = false; clearTimeout(timer); invalidate(); }
 try {
   worker = new Worker('worker.js', {type: 'module'});
@@ -119,6 +156,7 @@ try {
     generatedDownloads.forEach(key => $(key).disabled = false);
     $('status').textContent = `Rust checked this document · ${result.diagnostics.length} diagnostic${result.diagnostics.length === 1 ? '' : 's'}`;
     renderFindings(result.diagnostics);
+    renderOutline(result.outline);
     $('held').replaceChildren(...result.unassessed.map(text => { const li = document.createElement('li'); li.textContent = text; return li; }));
     if (previewURL) retiredURLs.add(previewURL);
     previewURL = URL.createObjectURL(new Blob([result.html], {type: 'text/html'}));

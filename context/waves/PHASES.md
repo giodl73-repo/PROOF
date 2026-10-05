@@ -117,6 +117,7 @@ close notes, and the artifacts that changed the system.
 | 2026-05-16 | Publication AST and Themes | Introduce a shared publication AST and theme token system for consistent professional publish output. | active |
 | 2026-08-19 | PROOF Product Restoration | Restore PROOF as the sole identity across the repository, package family, command surface, configuration, state, directives, documentation, and release automation, with no compatibility aliases. | done |
 | 2026-10-05 | [Browser Author Flow](2026-10-05-workbench-author-flow/README.md) | Apply repository role review to draft recovery, source custody, diagnostic guidance, scroll aids and mobile navigation. | done |
+| 2026-10-05 | [Browser Outline and Focus](2026-10-05-outline-focus/README.md) | Add Rust/CommonMark source and preview heading navigation with a focused authoring view. | done |
 
 Completed May 15 micro-waves that contained only a closeout are consolidated in
 [`2026-05-15-CLOSEOUT-LEDGER.md`](2026-05-15-CLOSEOUT-LEDGER.md). Multi-file

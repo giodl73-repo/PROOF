@@ -6,6 +6,8 @@ Open a local UTF-8 `.md` file (up to 1 MB), or paste into the editor. Edits save
 
 Markdown source downloads remain available even when Rust is unavailable or the 64 KB / 2,000-line check limit is exceeded. HTML and report downloads require the latest successful result. Related ASCII findings are grouped with repair guidance, preserving every native code/message/location. The editor adds line numbers and a monospace ruler; terminal diagrams scroll without wrapping. Mobile Source/Findings/Preview tabs support arrow, Home and End keys; selecting a finding returns to its source line.
 
+The Rust/CommonMark **Outline** lists headings, including Setext and container headings, excluding code fences. Each entry selects its source line or jumps to a unique heading anchor in the isolated HTML preview; duplicate names stay distinct. The JSON report includes heading level, title, source line and anchor. Anchors belong to the current result and may change after edits. **Focus view** widens source and preview on desktop; **Show findings** keeps diagnostics reachable, while mobile retains its pane tabs. These layout/navigation actions never edit source.
+
 This is a fixed single-document policy: filesystem links, cascading configuration, directives, repository admission and PDF/Office exports remain native. The shared `proof-core` crate preserves existing native public re-exports; `proof-web` owns browser policy and bounds.
 
 Build: `python tools/build-pages.py` with Rust 1.95.0 and wasm-bindgen-cli 0.2.127; then `npm ci && npm run test:pages`.
