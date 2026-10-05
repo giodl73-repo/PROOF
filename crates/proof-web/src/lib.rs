@@ -8,6 +8,8 @@ use proof_core::{
     diagnostic::Diagnostic,
 };
 use serde::Serialize;
+mod data_chart;
+pub use data_chart::{append_chart_json, inspect_data_json, render_data_chart_json};
 use std::path::Path;
 #[derive(Serialize)]
 pub struct Output {

@@ -180,10 +180,7 @@ function moveLines(down) {
     source.setSelectionRange(previous, previous + block.length);
   }
 }
-$('insert-diagram').onclick = () => {
-  const source = $('source'), before = source.value.slice(0, source.selectionStart);
-  // Track CommonMark fence delimiters; tilde fences and longer backtick fences
-  // must not receive nested triple-backtick templates.
+function sourceFence(before) {
   let fence = null, fenceIndent = '';
   for (const line of before.split('\n')) {
     const match = line.match(/^( {0,3})(`{3,}|~{3,})(.*)$/);
@@ -191,6 +188,13 @@ $('insert-diagram').onclick = () => {
     if (!fence && !(match[2][0] === '`' && match[3].includes('`'))) { fence = match[2]; fenceIndent = match[1]; }
     else if (fence && match[2][0] === fence[0] && match[2].length >= fence.length && !match[3].trim()) { fence = null; fenceIndent = ''; }
   }
+  return {fence, fenceIndent};
+}
+$('insert-diagram').onclick = () => {
+  const source = $('source'), before = source.value.slice(0, source.selectionStart);
+  // Track CommonMark fence delimiters; tilde fences and longer backtick fences
+  // must not receive nested triple-backtick templates.
+  const {fence, fenceIndent} = sourceFence(before);
   const diagram = diagrams[$('diagram').value].split('\n').map(line => fenceIndent + line).join('\n');
   const prefix = before && !before.endsWith('\n') ? '\n' : '';
   const after = source.value.slice(source.selectionEnd);
@@ -218,12 +222,95 @@ $('show-findings').onclick = () => {
   $('pane-checks').setAttribute('tabindex', '-1'); $('pane-checks').focus();
 };
 
-function workerFailed() { failed = true; ready = false; clearTimeout(timer); invalidate(); }
+let dataRequest = 0, attachment = null, generatedChart = null, appendSource = null;
+const chartActions = ['insert-chart', 'download-chart', 'download-binding'];
+function invalidateChart() {
+  generatedChart = null; appendSource = null; chartActions.forEach(key => $(key).disabled = true);
+  $('data-preview').hidden = true; $('data-preview').textContent = '';
+}
+function clearAttachment(message = 'No data attached. Files stay in this browser session.') {
+  dataRequest++; attachment = null; invalidateChart();
+  ['data-label','data-value'].forEach(key => { $(key).replaceChildren(); $(key).disabled = true; });
+  $('generate-chart').disabled = true; $('download-data').disabled = true;
+  $('data-status').textContent = message;
+}
+function inspectAttachment(content, format, name) {
+  clearAttachment('Inspecting data with Rust…');
+  attachment = {content, format, name};
+  worker.postMessage({type:'data-inspect',id:dataRequest,content,format});
+}
+function dataReply(data) {
+  if (data.id !== dataRequest || !attachment) return;
+  if (data.type === 'data-append') {
+    $('insert-chart').disabled = false;
+    const original = appendSource; appendSource = null;
+    if (data.error) { action(data.error); return; }
+    if ($('source').value !== original) { action('Source changed during insertion. Generate or insert again; source was kept.'); return; }
+    replaceSource(data.result, 'Generated chart appended. Undo source change restores the previous document.');
+    const source = $('source'); source.focus(); source.setSelectionRange(data.result.length - generatedChart.markdown.length, data.result.length); source.scrollTop = source.scrollHeight; sourceAids();
+    return;
+  }
+  if (data.error) { invalidateChart(); $('generate-chart').disabled = !attachment.fields; $('data-status').textContent = data.error; return; }
+  if (data.type === 'data-inspect') {
+    attachment.fields = data.result.fields; attachment.rows = data.result.rows;
+    for (const key of ['data-label','data-value']) {
+      $(key).replaceChildren(...attachment.fields.map(field => { const option = document.createElement('option'); option.value = field; option.textContent = field; return option; }));
+      $(key).disabled = false;
+    }
+    const choose = candidates => candidates.map(candidate => attachment.fields.find(field => field.toLowerCase() === candidate)).find(Boolean);
+    $('data-value').value = choose(['value','score','count','amount','total','val']) || attachment.fields[Math.min(1, attachment.fields.length - 1)];
+    $('data-label').value = choose(['name','label','title','item','team','category','key','id']) || attachment.fields.find(field => field !== $('data-value').value) || attachment.fields[0];
+    $('generate-chart').disabled = false; $('download-data').disabled = false;
+    $('data-status').textContent = `${attachment.name} · ${attachment.rows} rows · local session attachment`;
+  } else {
+    generatedChart = {...data.result, binding:{source:attachment.name,format:attachment.format,label:$('data-label').value,value:$('data-value').value,kind:$('data-kind').value,width:Number($('data-width').value)}};
+    $('data-preview').textContent = generatedChart.text; $('data-preview').hidden = false;
+    chartActions.forEach(key => $(key).disabled = false); $('generate-chart').disabled = false;
+    $('data-status').textContent = `Rust generated ${generatedChart.rows} rows from ${attachment.name}. Source unchanged until insertion.`;
+  }
+}
+$('attach-data').onclick = () => $('data-file').click();
+$('clear-data').onclick = () => clearAttachment();
+$('sample-data').onclick = () => inspectAttachment('| Team | Score |\n|---|---|\n| Alpha | 10 |\n| Beta | 5 |\n', 'markdown', 'sample-data.md');
+$('data-file').onchange = async () => {
+  const file = $('data-file').files[0]; $('data-file').value = ''; if (!file) return;
+  clearAttachment('Reading local data…'); const request = dataRequest;
+  if (!ready) { $('data-status').textContent = 'Rust data tools are unavailable.'; return; }
+  const format = /\.json$/i.test(file.name) ? 'json' : /\.(md|markdown)$/i.test(file.name) ? 'markdown' : null;
+  if (!format || file.size > 65536) { $('data-status').textContent = 'Attach UTF-8 .md/.markdown or .json up to 64 KB.'; return; }
+  try {
+    const content = new TextDecoder('utf-8', {fatal:true}).decode(await file.arrayBuffer());
+    if (request !== dataRequest) return;
+    inspectAttachment(content, format, file.name);
+  } catch { if (request === dataRequest) $('data-status').textContent = 'Could not read UTF-8 data. Markdown source was kept.'; }
+};
+for (const key of ['data-label','data-value','data-kind','data-width']) $(key).addEventListener('input', () => {
+  if (!attachment?.fields) return;
+  dataRequest++; invalidateChart(); $('generate-chart').disabled = !ready;
+  if (attachment?.fields) $('data-status').textContent = 'Binding changed. Generate again to update the chart.';
+});
+$('generate-chart').onclick = () => {
+  if (!ready || !attachment?.fields) return;
+  const width = Number($('data-width').value);
+  if (!Number.isInteger(width) || width < 20 || width > 120) { invalidateChart(); $('data-status').textContent = 'Chart width must be a whole number of 20–120 columns.'; return; }
+  dataRequest++; invalidateChart(); $('generate-chart').disabled = true; $('data-status').textContent = 'Generating with Rust…';
+  worker.postMessage({type:'data-chart',id:dataRequest,...attachment,label:$('data-label').value,value:$('data-value').value,kind:$('data-kind').value,width:Number($('data-width').value)});
+};
+$('insert-chart').onclick = () => {
+  if (!ready || !generatedChart) return;
+  dataRequest++; appendSource = $('source').value; $('insert-chart').disabled = true;
+  worker.postMessage({type:'data-append',id:dataRequest,source:appendSource,markdown:generatedChart.markdown});
+};
+$('download-chart').onclick = () => generatedChart && download(generatedChart.markdown, 'chart.md', 'text/markdown');
+$('download-data').onclick = () => attachment?.fields && download(attachment.content, attachment.name, 'text/plain');
+$('download-binding').onclick = () => generatedChart && download(JSON.stringify(generatedChart.binding,null,2), 'chart-binding.json', 'application/json');
+function workerFailed() { clearAttachment('Rust data tools unavailable. Markdown editing and download still work.'); $('attach-data').disabled = true; $('sample-data').disabled = true; failed = true; ready = false; clearTimeout(timer); invalidate(); }
 try {
   worker = new Worker('worker.js', {type: 'module'});
   worker.onerror = workerFailed;
   worker.onmessage = ({data}) => {
-    if (data.ready) { ready = true; check(); return; }
+    if (data.ready) { ready = true; $('attach-data').disabled = false; $('sample-data').disabled = false; $('data-status').textContent = 'Attach a local data file or try the sample.'; check(); return; }
+    if (data.type) { dataReply(data); return; }
     if (data.id !== id) return;
     if (data.error) { $('status').textContent = data.error; return; }
     result = data.result;

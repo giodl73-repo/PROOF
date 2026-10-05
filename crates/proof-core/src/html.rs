@@ -191,3 +191,62 @@ mod outline_tests {
         assert_eq!(outline[1].line, 4);
     }
 }
+
+/// Append a materialized fenced block only when CommonMark recognizes its
+/// opening delimiter at the insertion offset, including after container blocks.
+pub fn append_fenced_block(source: &str, block: &str) -> Result<String, String> {
+    if source.len() > 65536 || block.len() > 65536 {
+        return Err("Keep inserted documents within 64 KB; download the chart separately".into());
+    }
+    let separator = if source.is_empty() || source.ends_with("\n\n") {
+        ""
+    } else if source.ends_with('\n') {
+        "\n"
+    } else {
+        "\n\n"
+    };
+    let start = source.len() + separator.len();
+    let combined = format!("{source}{separator}{block}");
+    if combined.len() > 65536 || combined.lines().count() > 2000 {
+        return Err(
+            "Keep inserted documents within 64 KB / 2,000 lines; download the chart separately"
+                .into(),
+        );
+    }
+    if !pulldown_cmark::Parser::new(&combined)
+        .into_offset_iter()
+        .any(|(event, range)| {
+            matches!(
+                event,
+                pulldown_cmark::Event::Start(pulldown_cmark::Tag::CodeBlock(
+                    pulldown_cmark::CodeBlockKind::Fenced(_)
+                ))
+            ) && range.start == start
+        })
+    {
+        return Err("Close the source block before inserting, or download Chart Markdown separately. Source was kept.".into());
+    }
+    Ok(combined)
+}
+#[cfg(test)]
+mod append_tests {
+    use super::*;
+    #[test]
+    fn append_after_list_fence() {
+        assert!(
+            append_fenced_block("- ```text\n  content\n  ```", "```text\nchart\n```\n")
+                .unwrap()
+                .ends_with("```text\nchart\n```\n")
+        );
+    }
+    #[test]
+    fn reject_unclosed_blocks() {
+        for source in ["```text\nunfinished", "<!-- unfinished"] {
+            assert!(append_fenced_block(source, "```text\nchart\n```\n").is_err());
+        }
+    }
+    #[test]
+    fn reject_document_limit() {
+        assert!(append_fenced_block(&"a".repeat(65536), "```text\nx\n```\n").is_err());
+    }
+}

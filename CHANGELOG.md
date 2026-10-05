@@ -1,5 +1,12 @@
 # Changelog
 
+## Browser local data charts — 2026-10-05
+
+- Attach Markdown table/JSON data locally and bind label/value fields to Rust bar, line and area charts.
+- Preview, append with undo and download materialized chart/data/binding metadata; attachments stay session-only.
+- Share native chart rendering and table/JSON parsing through proof-core while retaining native compatibility facades.
+
+
 ## Browser ASCII authoring — 2026-10-05
 
 - Add literal box, flow and branch templates, with fenced insertion.
