@@ -23,3 +23,7 @@ Final `codex review --uncommitted` exited 0 clean with no accepted or rejected f
 Native CI and release jobs explicitly install Rust 1.95.0 to match the repository pin and validated Pages toolchain. Earlier floating-stable CI failed on Rust 1.98 Clippy warnings; strict checks remain enabled, and downstream tool invocations inherit the reproducible default.
 
 Follow-up CI toolchain-pin review (`codex review --uncommitted`) exited 0 clean.
+
+Hosted native compatibility tests exposed a stale MDCROP CI pin: 4c3f6e6a lacks examples/proof-fixture. CI now uses public main commit 01bf332a2a39d8c95d6af7389f3fcab23b447f62, whose view/source fixture is verified through GitHub. Strict real-MDCROP tests stay enabled; the MDCROP repo is unchanged.
+
+Public MDCROP 01bf332a and locally tested 7c9ae7ca compare identical across src, Cargo.toml, Cargo.lock and examples/proof-fixture; their differences are policy documentation only. CI fixture-pin `codex review --uncommitted` exited 0 clean.
