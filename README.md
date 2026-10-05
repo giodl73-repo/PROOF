@@ -2,6 +2,10 @@
 
 [Open the Markdown workbench](https://giodl73-repo.github.io/PROOF/). The browser runs the same Rust heading, table and ASCII checks as the CLI, with HTML and terminal math previews and Markdown/HTML/JSON downloads. Inputs stay local (64 KB, 2,000 lines). Shared source lives in the URL fragment.
 
+Open a local UTF-8 `.md` file (up to 1 MB), or paste into the editor. Edits save a recoverable draft in this browser; **Clear saved draft** removes it without clearing the editor. Storage denial or drafts over 1 MB show a recovery notice. Explicit shared/example URLs open their content ahead of a saved draft; editing clears that URL and saves the current draft. **Undo replacement** restores source replaced by an example or file. Files are read locally without upload; CRLF becomes LF in the editor.
+
+Markdown source downloads remain available even when Rust is unavailable or the 64 KB / 2,000-line check limit is exceeded. HTML and report downloads require the latest successful result. Related ASCII findings are grouped with repair guidance, preserving every native code/message/location. The editor adds line numbers and a monospace ruler; terminal diagrams scroll without wrapping. Mobile Source/Findings/Preview tabs support arrow, Home and End keys; selecting a finding returns to its source line.
+
 This is a fixed single-document policy: filesystem links, cascading configuration, directives, repository admission and PDF/Office exports remain native. The shared `proof-core` crate preserves existing native public re-exports; `proof-web` owns browser policy and bounds.
 
 Build: `python tools/build-pages.py` with Rust 1.95.0 and wasm-bindgen-cli 0.2.127; then `npm ci && npm run test:pages`.

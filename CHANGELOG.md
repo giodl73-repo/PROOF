@@ -27,6 +27,10 @@ v0.1  │ check · ASCII box / flow / tree · markdown rules              │
 
 ## [Unreleased]
 
+### Added
+
+- Browser workbench author flow: local draft recovery and clearing, UTF-8 Markdown file opening and replacement undo, source download independent of checking, grouped repair guidance, line numbers/ruler, and mobile pane tabs. Wide terminal diagrams preserve spacing with horizontal scrolling.
+
 ### Changed
 
 - Restored PROOF as the sole product, repository, package, binary, library,
