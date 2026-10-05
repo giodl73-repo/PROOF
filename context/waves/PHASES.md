@@ -148,3 +148,5 @@ Each active wave keeps:
   pretending a wave plan existed before the work.
 - Closeout may recommend changelog entries, but release notes should stay
   semver-oriented.
+
+| 2026-10-05 | [Browser Author Flow](2026-10-05-workbench-author-flow/README.md) | Apply repository role review to draft recovery, source custody, diagnostic guidance, scroll aids and mobile navigation. | done |
