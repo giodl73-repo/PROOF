@@ -1,4 +1,4 @@
-use pulldown_cmark::{html, Event, Options, Parser};
+use proof_core::html::markdown_to_html_fragment;
 use serde::Serialize;
 use std::{
     fmt::Write as _,
@@ -1212,25 +1212,6 @@ fn escape_pdf_text(text: &str) -> String {
             _ => "?".to_string(),
         })
         .collect()
-}
-
-fn markdown_to_html_fragment(markdown: &str) -> String {
-    let parser = Parser::new_ext(markdown, markdown_options()).map(|event| match event {
-        Event::Html(raw) | Event::InlineHtml(raw) => Event::Text(raw),
-        other => other,
-    });
-    let mut html_out = String::new();
-    html::push_html(&mut html_out, parser);
-    html_out
-}
-
-fn markdown_options() -> Options {
-    let mut options = Options::empty();
-    options.insert(Options::ENABLE_TABLES);
-    options.insert(Options::ENABLE_TASKLISTS);
-    options.insert(Options::ENABLE_STRIKETHROUGH);
-    options.insert(Options::ENABLE_FOOTNOTES);
-    options
 }
 
 fn path_string(path: &Path) -> String {

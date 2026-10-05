@@ -21,6 +21,7 @@ name = "proof_lib"
 path = "src/lib.rs"
 
 [dependencies]
+proof-core={path="crates/proof-core"}
 clap = { version = "4", features = ["derive", "color"] }
 serde = { version = "1", features = ["derive"] }
 toml = "0.8"
@@ -63,3 +64,7 @@ strip = true
 [features]
 figure = ["image"]
 svg = ["figure", "resvg"]
+
+[workspace]
+members=["crates/proof-core","crates/proof-web","crates/proof-math","crates/proof-canvas"]
+resolver="2"

@@ -1,3 +1,11 @@
+## Browser workbench
+
+[Open the Markdown workbench](https://giodl73-repo.github.io/PROOF/). The browser runs the same Rust heading, table and ASCII checks as the CLI, with HTML and terminal math previews and Markdown/HTML/JSON downloads. Inputs stay local (64 KB, 2,000 lines). Shared source lives in the URL fragment.
+
+This is a fixed single-document policy: filesystem links, cascading configuration, directives, repository admission and PDF/Office exports remain native. The shared `proof-core` crate preserves existing native public re-exports; `proof-web` owns browser policy and bounds.
+
+Build: `python tools/build-pages.py` with Rust 1.95.0 and wasm-bindgen-cli 0.2.127; then `npm ci && npm run test:pages`.
+
 # PROOF
 
 **Weave Markdown into finished documents.**
