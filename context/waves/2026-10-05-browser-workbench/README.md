@@ -19,3 +19,7 @@ After the preview lifecycle correction, the six browser cases passed three repea
 Final lifecycle review identified overwritten cleanup handlers under rapid preview replacements. Retired blob URLs now have an independent set; a delayed three-result browser regression checks that all retired documents are revoked and the current document remains usable.
 
 Final `codex review --uncommitted` exited 0 clean with no accepted or rejected findings. Seven final real-WASM browser cases passed.
+
+Native CI and release jobs explicitly install Rust 1.95.0 to match the repository pin and validated Pages toolchain. Earlier floating-stable CI failed on Rust 1.98 Clippy warnings; strict checks remain enabled, and downstream tool invocations inherit the reproducible default.
+
+Follow-up CI toolchain-pin review (`codex review --uncommitted`) exited 0 clean.
