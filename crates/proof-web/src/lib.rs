@@ -16,6 +16,7 @@ pub struct Output {
     pub terminal: String,
     pub html: String,
     pub diagnostics: Vec<Diagnostic>,
+    pub outline: Vec<proof_core::html::OutlineHeading>,
     pub unassessed: Vec<&'static str>,
 }
 pub fn evaluate(source: &str) -> Result<Output, String> {
@@ -100,7 +101,7 @@ pub fn evaluate(source: &str) -> Result<Output, String> {
         .join("\n");
     diagnostics
         .sort_by(|a, b| (a.span.line, a.span.col, a.code).cmp(&(b.span.line, b.span.col, b.code)));
-    let fragment = proof_core::html::markdown_to_html_fragment(&source);
+    let (fragment, outline) = proof_core::html::markdown_to_html_with_outline(&source);
     let html=format!("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>PROOF document</title><style>body{{font-family:system-ui;line-height:1.6;padding:20px;overflow-wrap:anywhere}}pre{{overflow:auto;padding:12px;background:#f4f4f0}}table{{border-collapse:collapse}}td,th{{border:1px solid #bbb;padding:8px}}img{{max-width:100%}}</style></head><body>{fragment}</body></html>");
     Ok(Output {
         model: "proof-workbench-v1",
@@ -108,6 +109,7 @@ pub fn evaluate(source: &str) -> Result<Output, String> {
         terminal,
         html,
         diagnostics,
+        outline,
         unassessed: vec![
             "Cross-file links and md:// references",
             "Repository/cascading configuration and admission",
@@ -129,7 +131,9 @@ mod tests {
         assert_eq!(out.source, input);
         assert!(out.terminal.contains('α'));
         assert!(out.diagnostics.iter().any(|d| d.code == "md_h1_count"));
-        assert!(out.html.contains("<h1>One</h1>"));
+        assert!(out.html.contains("<h1 id=\"proof-heading-1\">One</h1>"));
+        assert_eq!(out.outline[0].title, "One");
+        assert_eq!(out.outline[0].line, 1);
     }
     #[test]
     fn container_and_long_fences_stay_literal() {

@@ -29,6 +29,8 @@ v0.1  │ check · ASCII box / flow / tree · markdown rules              │
 
 ### Added
 
+- Rust/CommonMark browser heading outline with source/isolated-preview navigation and unique anchors, plus a focused authoring layout with reachable findings. Native fragment rendering remains unchanged.
+
 - Browser workbench author flow: local draft recovery and clearing, UTF-8 Markdown file opening and replacement undo, source download independent of checking, grouped repair guidance, line numbers/ruler, and mobile pane tabs. Wide terminal diagrams preserve spacing with horizontal scrolling.
 
 ### Changed
