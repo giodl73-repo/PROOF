@@ -21,3 +21,6 @@ pub mod checks;
 pub mod config;
 pub mod diagnostic;
 pub mod html;
+
+pub mod chart;
+pub mod data;

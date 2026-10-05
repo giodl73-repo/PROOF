@@ -60,7 +60,9 @@ test('outline invalidates with edits, errors show no stale headings, report incl
   await expect(page.locator('#outline-summary')).toHaveText('Outline · 0 headings');
   await expect(page.locator('#outline')).toContainText('No Markdown headings');
   await page.fill('#source', '# Current\n'); await checked(page);
-  const [download] = await Promise.all([page.waitForEvent('download'), page.click('#json')]);
+  // Exercise keyboard export without a focused editor's caret scroll racing a mouse click.
+  await page.locator('#json').focus();
+  const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#json').press('Enter')]);
   let json = ''; for await (const chunk of await download.createReadStream()) json += chunk.toString();
   const result = JSON.parse(json); expect(result.outline).toEqual([{level:1,line:1,title:'Current',anchor:'proof-heading-1'}]);
   expect(result.html).toContain('id="proof-heading-1"'); expect(result.source).toBe('# Current\n');
