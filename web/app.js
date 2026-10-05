@@ -133,6 +133,80 @@ function renderOutline(headings) {
     row.append(source, preview); $('outline').append(row);
   }
 }
+// All offsets use textarea UTF-16 coordinates, including non-ASCII surrounding text.
+const diagrams = {
+  box: '+--------------+\n| Your label   |\n+--------------+',
+  flow: '+-------+     +-------+\n| Input | --> | Output|\n+-------+     +-------+',
+  branch: '+-----+\n| Ask |\n+-----+\n   |\n   +------> Yes\n   |\n   +------> No'
+};
+function applyEdit(start, end, text) {
+  const source = $('source'); undoSource = source.value; $('undo').disabled = false; source.focus();
+  source.setRangeText(text, start, end, 'select'); edited(); sourceAids();
+}
+function selectedLines() {
+  const source = $('source'), value = source.value;
+  const start = source.selectionStart === 0 ? 0 : value.lastIndexOf('\n', source.selectionStart - 1) + 1;
+  // A selection ending at the next line's start does not include that line.
+  const last = source.selectionEnd > source.selectionStart && value[source.selectionEnd - 1] === '\n' ? source.selectionEnd - 1 : source.selectionEnd;
+  const newline = value.indexOf('\n', last);
+  return {start, end: newline < 0 ? value.length : newline};
+}
+function indentLines(outdent = false) {
+  const source = $('source'), {start, end} = selectedLines();
+  const selection = [source.selectionStart, source.selectionEnd];
+  let position = start;
+  const deltas = [];
+  const text = source.value.slice(start, end).split('\n').map(line => {
+    const removed = outdent ? (line.match(/^( {1,2}|\t)/)?.[0].length || 0) : 0;
+    deltas.push({position, removed}); position += line.length + 1;
+    return outdent ? line.slice(removed) : '  ' + line;
+  }).join('\n');
+  const adjusted = selection.map(offset => offset + deltas.reduce((delta, item) =>
+    delta + (outdent ? -Math.min(item.removed, Math.max(0, offset - item.position)) : offset >= item.position ? 2 : 0), 0));
+  applyEdit(start, end, text); source.setSelectionRange(...adjusted);
+}
+function moveLines(down) {
+  const source = $('source'), value = source.value, {start, end} = selectedLines();
+  if (down) {
+    if (end === value.length) return;
+    const nextBreak = value.indexOf('\n', end + 1), nextEnd = nextBreak < 0 ? value.length : nextBreak;
+    const next = value.slice(end + 1, nextEnd), block = value.slice(start, end);
+    applyEdit(start, nextEnd, next + '\n' + block);
+    source.setSelectionRange(start + next.length + 1, nextEnd);
+  } else {
+    if (!start) return;
+    const previous = start <= 1 ? 0 : value.lastIndexOf('\n', start - 2) + 1, block = value.slice(start, end);
+    applyEdit(previous, end, block + '\n' + value.slice(previous, start - 1));
+    source.setSelectionRange(previous, previous + block.length);
+  }
+}
+$('insert-diagram').onclick = () => {
+  const source = $('source'), before = source.value.slice(0, source.selectionStart);
+  // Track CommonMark fence delimiters; tilde fences and longer backtick fences
+  // must not receive nested triple-backtick templates.
+  let fence = null, fenceIndent = '';
+  for (const line of before.split('\n')) {
+    const match = line.match(/^( {0,3})(`{3,}|~{3,})(.*)$/);
+    if (!match) continue;
+    if (!fence && !(match[2][0] === '`' && match[3].includes('`'))) { fence = match[2]; fenceIndent = match[1]; }
+    else if (fence && match[2][0] === fence[0] && match[2].length >= fence.length && !match[3].trim()) { fence = null; fenceIndent = ''; }
+  }
+  const diagram = diagrams[$('diagram').value].split('\n').map(line => fenceIndent + line).join('\n');
+  const prefix = before && !before.endsWith('\n') ? '\n' : '';
+  const after = source.value.slice(source.selectionEnd);
+  const suffix = after && !after.startsWith('\n') ? '\n' : '';
+  applyEdit(source.selectionStart, source.selectionEnd, prefix + (fence ? diagram : '```text\n' + diagram + '\n```') + suffix);
+};
+$('indent').onclick = () => indentLines(); $('outdent').onclick = () => indentLines(true);
+$('move-up').onclick = () => moveLines(false); $('move-down').onclick = () => moveLines(true);
+let releaseTab = false;
+$('source').addEventListener('keydown', event => {
+  if (event.key === 'Escape') { releaseTab = true; return; }
+  if (event.key === 'Tab' && releaseTab) { releaseTab = false; return; }
+  releaseTab = false;
+  if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) { event.preventDefault(); indentLines(event.shiftKey); }
+  if (event.altKey && !event.ctrlKey && !event.metaKey && ['ArrowUp', 'ArrowDown'].includes(event.key)) { event.preventDefault(); moveLines(event.key === 'ArrowDown'); }
+});
 $('focus').onclick = () => {
   const focused = $('focus').getAttribute('aria-pressed') !== 'true';
   $('focus').setAttribute('aria-pressed', String(focused)); $('focus').textContent = focused ? 'Exit focus view' : 'Focus view';
@@ -167,7 +241,7 @@ try {
 } catch { workerFailed(); }
 $('source').addEventListener('input', edited);
 $('source').addEventListener('scroll', sourceAids);
-$('load').onclick = () => replaceSource(examples[$('example').value], 'Example loaded. Undo replacement restores your previous source.');
+$('load').onclick = () => replaceSource(examples[$('example').value], 'Example loaded. Undo source change restores your previous source.');
 $('undo').onclick = () => {
   if (undoSource === null) return;
   const previous = undoSource; undoSource = null; $('undo').disabled = true;
@@ -185,7 +259,7 @@ $('file').onchange = async () => {
   try {
     const text = new TextDecoder('utf-8', {fatal: true}).decode(await file.arrayBuffer());
     if (request !== fileRequest) return;
-    replaceSource(text.replace(/\r\n/g, '\n'), `Opened ${file.name} locally. Undo replacement restores the previous source.`);
+    replaceSource(text.replace(/\r\n/g, '\n'), `Opened ${file.name} locally. Undo source change restores the previous source.`);
   } catch { if (request === fileRequest) action('Could not read UTF-8 Markdown. Current source was kept.'); }
 };
 $('view').onchange = () => { $('preview').hidden = !result || $('view').value !== 'html'; $('terminal').hidden = $('view').value !== 'terminal'; };

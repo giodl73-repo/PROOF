@@ -592,3 +592,7 @@ proof compile --watch
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+### ASCII diagram authoring in the browser
+
+Open **ASCII diagram tools** in the source pane for box, flow and branch templates. Insertions replace the selection and add a text fence outside an ordinary backtick or tilde fenced block. Templates are literal editable ASCII, not generated images. Tab / Shift+Tab indent selected lines by two spaces; Alt+Up / Alt+Down move the block. A selection ending at the following line start excludes that line. Escape then Tab leaves the editor. Toolbar controls provide the same edits on mobile. These controls work without WASM; Rust checks and terminal preview remain available when the engine loads. Undo source change restores the source before the last template, indentation, movement, file or example operation. Existing recovery and Markdown downloads retain your edits.
