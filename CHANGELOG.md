@@ -1,5 +1,12 @@
 # Changelog
 
+## Browser ASCII authoring — 2026-10-05
+
+- Add literal box, flow and branch templates, with fenced insertion.
+- Add selected-line indentation and movement with mobile buttons and keyboard controls; Escape then Tab exits the editor.
+- Preserve source recovery and downloads independently of Rust availability.
+
+
 All notable changes to **PROOF** (originally **glint**), in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. This project follows semantic versioning.
 
 The throughline: a tool that began as an ASCII-box width checker has grown into a four-stage document quality system — **detect → plan → fix → compile** — with stable figure addressing, invariant pinning, and a math/diagram/slide rendering pipeline on top.

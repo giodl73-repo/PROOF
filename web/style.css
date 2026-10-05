@@ -6,3 +6,5 @@
 
 #outline-panel{margin:0 0 10px;padding:0;border:0}#outline{display:block;margin:8px 0;max-height:220px;overflow:auto}.outline-row{display:flex;gap:5px;margin:4px 0}.outline-row button{font-size:12px;padding:5px 7px}.outline-source{flex:1;min-width:0;text-align:left;overflow-wrap:anywhere}.outline-preview{flex:none}.focus-mode main>h1,.focus-mode .lead,.focus-mode footer{display:none}.focus-mode .editor{grid-template-rows:24px min(650px,65vh)}.focus-mode iframe,.focus-mode #terminal{height:min(650px,65vh)}#focus[aria-pressed="true"]{background:#dce7d5;border-color:#315f50}
 @media(min-width:1001px){.workspace[data-focus="true"]{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.workspace[data-focus="true"] #pane-checks{display:none}.workspace[data-focus="true"][data-pane="checks"] #pane-checks{display:block;grid-column:1/-1;grid-row:1}.workspace[data-focus="true"] #pane-source{grid-column:1}.workspace[data-focus="true"] #pane-preview{grid-column:2}}
+
+#ascii-panel{margin:0 0 10px;padding:0;border:0}.ascii-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.ascii-tools button,.ascii-tools select{font-size:12px;padding:5px 7px}
